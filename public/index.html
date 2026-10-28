@@ -143,7 +143,7 @@ footer{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--li
       <a class="btn" href="/claims/">Open the claims prototype</a>
       <a class="btn ghost" href="https://uradomat.sanzarsagyn.workers.dev/?lang=en" target="_blank" rel="noopener">Open Úřadomat</a>
       <button class="btn ghost" type="button" id="copyMail">Copy my email</button>
-      <span class="mail" id="mailText">sanzharsagyn4@gmail.com</span>
+      <span class="mail" id="mailText">sanzarsagyn@gmail.com</span>
     </div>
   </header>
 
@@ -242,7 +242,7 @@ footer{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--li
 
   <footer>
     <h2>Let's talk</h2>
-    <p>I'm looking for a team where I can do this kind of work: Data & AI, AI engineering, or turning a messy process into a working tool. Write to me at <span class="mail">sanzharsagyn4@gmail.com</span>.</p>
+    <p>I'm looking for a team where I can do this kind of work: Data & AI, AI engineering, or turning a messy process into a working tool. Write to me at <span class="mail">sanzarsagyn@gmail.com</span>.</p>
   </footer>
 </main>
 <div class="toast" id="toast" role="status"></div>
@@ -281,7 +281,7 @@ footer{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--li
   var t, toast = document.getElementById("toast");
   function show(msg){ toast.textContent = msg; toast.classList.add("on"); clearTimeout(t); t = setTimeout(function(){ toast.classList.remove("on"); }, 1800); }
   document.getElementById("copyMail").addEventListener("click", function(){
-    var mail = "sanzharsagyn4@gmail.com", node = document.getElementById("mailText");
+    var mail = "sanzarsagyn@gmail.com", node = document.getElementById("mailText");
     function sel(){ try { var r = document.createRange(); r.selectNodeContents(node); var s = getSelection(); s.removeAllRanges(); s.addRange(r); } catch(e){} show("Email selected: press Ctrl+C"); }
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(mail).then(function(){ show("Email copied"); }, sel);
