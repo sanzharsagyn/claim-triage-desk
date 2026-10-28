@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sanzhar Sagyn</title>
+<meta name="description" content="Geologist turned AI builder in Czechia: Claim Triage Desk, a working LLM prototype for insurance claims, and Úřadomat, a free tool for foreigners extending their residence.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,600;0,8..60,700;1,8..60,600&family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+[hidden]{display:none!important}
+/* Layout: a single reading column (case study) with one bold moment — a struck-out feature under an official-style "removed" stamp — then a build log and a working mini-calculator. Úřadomat's navy and stamp red carry over. */
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --ink:#13212D; --muted:#4D5D6D; --line:#D6DDE5;
+  --navy:#0F2A43; --navy-ink:#FFFFFF; --stamp:#B3261E; --stamp-soft:#F8E1DF; --ok:#1B6B3A; --chip:#E6EBF1;
+  --display:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1620; --surface:#14212C; --ink:#E8EDF2; --muted:#9DAEBE; --line:#283948;
+    --navy:#DCE6F0; --navy-ink:#0C1620; --stamp:#FF8F85; --stamp-soft:#3A1916; --ok:#7FD39B; --chip:#1F2E3B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1620; --surface:#14212C; --ink:#E8EDF2; --muted:#9DAEBE; --line:#283948;
+  --navy:#DCE6F0; --navy-ink:#0C1620; --stamp:#FF8F85; --stamp-soft:#3A1916; --ok:#7FD39B; --chip:#1F2E3B;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:720px;margin-inline:auto;padding-block:36px 72px;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3,p,ul,ol{margin:0}
+a{color:inherit;text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--stamp);outline-offset:3px}
+.eyebrow{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,6.4vw,52px);line-height:1.06;letter-spacing:-.015em;text-wrap:balance}
+h2{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.2;text-wrap:balance}
+h3{font-size:16px;font-weight:800;line-height:1.35}
+.lede{font-size:19px;color:var(--muted);max-width:58ch}
+section{display:flex;flex-direction:column;gap:18px}
+section > p{max-width:64ch}
+
+/* hero */
+.hero{display:flex;flex-direction:column;gap:22px}
+.who{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline}
+.who b{font-size:15px;font-weight:800}
+.who span{font-size:14px;color:var(--muted)}
+.removed{position:relative;align-self:flex-start;max-width:100%;margin-block:30px 4px}
+@media (max-width:480px){.removed .stamp{right:-4px;top:-44px}}
+.fakebtn{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:17px;padding:14px 20px;border-radius:10px;background:var(--navy);color:var(--navy-ink);opacity:.55;text-decoration:line-through;text-decoration-thickness:3px;text-decoration-color:var(--stamp);max-width:100%}
+.stamp{position:absolute;right:-30px;top:-40px;transform:rotate(-8deg);border:3px solid var(--stamp);color:var(--stamp);background:var(--bg);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;line-height:1.25;text-align:center}
+.stamp small{display:block;font-size:10px;letter-spacing:.06em}
+.cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-size:15px;font-weight:800;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:9px;border:1.5px solid var(--navy);background:var(--navy);color:var(--navy-ink);text-decoration:none;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.mail{font-family:var(--mono);font-size:14px;color:var(--muted);user-select:all;overflow-wrap:anywhere}
+
+/* lists */
+.facts{display:grid;gap:14px;padding:0;list-style:none}
+.facts li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+.facts li::before{content:"";width:8px;height:8px;margin-top:10px;border-radius:2px;background:var(--stamp)}
+.does{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.does div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.does p{font-size:15px;color:var(--muted)}
+@media (max-width:640px){.does{grid-template-columns:1fr}}
+
+/* calculator */
+.calc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:16px}
+.calc-in{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.calc-in{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.f label{font-size:13px;font-weight:700;color:var(--muted)}
+select{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;min-height:44px;width:100%}
+.calc-out{display:grid;gap:0;border-top:1px solid var(--line)}
+.row{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.row span:last-child{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.row.total{font-weight:800;font-size:17px;border-bottom:0}
+.row.total span:last-child{color:var(--stamp)}
+.small{font-size:13px;color:var(--muted)}
+
+/* build log */
+.log{list-style:none;padding:0;display:flex;flex-direction:column}
+.log li{display:grid;grid-template-columns:88px minmax(0,1fr);gap:16px;padding:16px 0;border-top:1px solid var(--line)}
+.log li:last-child{border-bottom:1px solid var(--line)}
+.when{display:flex;flex-direction:column;gap:4px}
+.when time{font-family:var(--mono);font-size:13px;font-weight:700}
+.ver{font-family:var(--mono);font-size:12px;background:var(--chip);border-radius:5px;padding:2px 7px;align-self:flex-start}
+.log p{font-size:15.5px}
+.log .cut{background:var(--stamp-soft);margin-inline:-12px;padding-inline:12px;border-radius:8px;border-top-color:transparent}
+.log .cut + li{border-top-color:transparent}
+.log del{text-decoration-color:var(--stamp);text-decoration-thickness:2px}
+@media (max-width:480px){.log li{grid-template-columns:1fr;gap:6px}.when{flex-direction:row;gap:10px;align-items:center}}
+
+/* numbers */
+.nums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.nums div{background:var(--surface);padding:16px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.nums b{font-family:var(--display);font-size:32px;line-height:1;font-variant-numeric:tabular-nums}
+.nums span{font-size:13px;color:var(--muted)}
+@media (max-width:600px){.nums{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.how{counter-reset:h;list-style:none;padding:0;display:grid;gap:14px}
+.how li{display:grid;grid-template-columns:auto 1fr;gap:14px}
+.how li::before{counter-increment:h;content:counter(h);font-family:var(--mono);font-weight:700;font-size:13px;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center}
+.how p{font-size:15.5px;color:var(--muted)}
+
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.feat h2{font-size:28px}
+.feat p{max-width:62ch}
+.featstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.featstats div{background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.featstats b{font-family:var(--display);font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.featstats span{font-size:13px;color:var(--muted)}
+@media (max-width:600px){.featstats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.flist{list-style:none;padding:0;display:grid;gap:8px;font-size:15.5px}
+.flist li{display:grid;grid-template-columns:auto 1fr;gap:10px}
+.flist li::before{content:"→";color:var(--stamp);font-weight:800}
+.also{border-left:3px solid var(--navy);padding-left:16px;display:flex;flex-direction:column;gap:6px}
+footer{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line);padding-top:24px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:var(--navy-ink);padding:10px 16px;border-radius:10px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+
+<main class="wrap">
+  <header class="hero">
+    <div class="who"><b>Sanzhar Sagyn</b><span>Geologist turned AI builder · Czechia</span></div>
+    <h1>I deleted my best feature on day three.</h1>
+    <div class="removed" aria-label="Removed feature: write my letter to the Ministry with AI">
+      <span class="fakebtn">✦ Write my letter to the Ministry</span>
+      <span class="stamp">Removed<small>v9 · 13. 10. 2026</small></span>
+    </div>
+    <p class="lede">It was an AI that wrote a polished cover letter for a residence permit application. Then two legal advisers told me the Ministry doesn't need it. People get refused for other reasons. So I rebuilt the product around those reasons.</p>
+    <div class="cta">
+      <a class="btn" href="/claims/">Open the claims prototype</a>
+      <a class="btn ghost" href="https://uradomat.sanzarsagyn.workers.dev/?lang=en" target="_blank" rel="noopener">Open Úřadomat</a>
+      <button class="btn ghost" type="button" id="copyMail">Copy my email</button>
+      <span class="mail" id="mailText">sanzharsagyn4@gmail.com</span>
+    </div>
+  </header>
+
+  <section class="feat" aria-labelledby="h-feat">
+    <div class="eyebrow">Newest · a working prototype, evaluated</div>
+    <h2 id="h-feat">Claim Triage Desk</h2>
+    <p>A tool for life insurance claims. An LLM reads Czech, Ukrainian and Russian claim documents and has to quote the exact source of every fact. Code verifies each quote, checks the policy terms and calculates the payout. A claims handler makes the decision, and overrides of the AI are logged.</p>
+    <ul class="flist">
+      <li><span>Runs live on Claude Haiku 5.5 and Sonnet 5.5 through its own API, with caching, per-visitor limits and a daily budget.</span></li>
+      <li><span>Rejects any fact whose quote is not in the document, any impossible date and any invalid ICD-10 code.</span></li>
+      <li><span>Catches instructions hidden in documents, such as white text in an invoice telling the AI to approve the claim.</span></li>
+      <li><span>Measured on a test set of 24 documents with reference labels, comparing a cheap and a strong model.</span></li>
+    </ul>
+    <div class="featstats" id="featStats" hidden></div>
+    <div class="cta"><a class="btn" href="/claims/">Open the prototype</a><span id="codeLink"></span></div>
+  </section>
+
+  <section aria-labelledby="h-problem">
+    <h2 id="h-problem">Úřadomat: the problem</h2>
+    <p>Thousands of foreigners in Czechia run a small business as OSVČ and have to extend their residence regularly. Many applications run into trouble for reasons that are easy to avoid:</p>
+    <ul class="facts">
+      <li><span>They bring a tax return (<i>daňové přiznání</i>) when the Ministry expects the tax office's assessment (<i>platební výměr</i>).</span></li>
+      <li><span>A no-debt certificate is missing. There are four offices, and each certificate must be less than 30 days old on the day you apply.</span></li>
+      <li><span>Their income is below the legal minimum: the household's subsistence minimum plus housing costs. Almost nobody knows that number for their family.</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-does">
+    <h2 id="h-does">What Úřadomat does</h2>
+    <div class="does">
+      <div><h3>A checklist for your case</h3><p>Permit or visa, public or commercial insurance, how you prove income. Each item says how firmly it is required.</p></div>
+      <div><h3>The income you need</h3><p>Calculated the way the Ministry does it, with official amounts valid from 1. 10. 2026.</p></div>
+      <div><h3>Mistakes and deadlines</h3><p>Common reasons for refusal from court decisions, your personal filing window and how to apply.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-calc">
+    <h2 id="h-calc">Try the core calculation</h2>
+    <p>This is the same rule the site uses (§ 46 odst. 7 of Act No. 326/1999 Sb.): subsistence minimum of the household plus standard housing costs, taken at the upper limit published on ipc.gov.cz.</p>
+    <div class="calc">
+      <div class="calc-in">
+        <div class="f"><label for="cAdults">Adults</label><select id="cAdults"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div>
+        <div class="f"><label for="cK0">Children under 6</label><select id="cK0"><option selected>0</option><option>1</option><option>2</option><option>3</option></select></div>
+        <div class="f"><label for="cK6">Children 6–15</label><select id="cK6"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></div>
+        <div class="f"><label for="cK15">Children 15–26</label><select id="cK15"><option selected>0</option><option>1</option><option>2</option><option>3</option></select></div>
+      </div>
+      <div class="calc-out" aria-live="polite">
+        <div class="row"><span>Subsistence minimum (<i>životní minimum</i>)</span><span id="oZm"></span></div>
+        <div class="row"><span>Standard rent + energy allowance</span><span id="oHouse"></span></div>
+        <div class="row total"><span>Required monthly income</span><span id="oNeed"></span></div>
+      </div>
+      <p class="small">Outside Prague this is an upper limit. The full site also compares it with your actual rent and with your income from the tax assessment: (tax base − tax − insurance) / 12. An immigration lawyer checked the method on 12 test cases, and all 12 matched practice.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-log">
+    <h2 id="h-log">Build log</h2>
+    <p>Each version came from feedback by someone who knows the domain or uses the tool.</p>
+    <ol class="log">
+      <li><div class="when"><time datetime="2026-10-12">12 Oct</time><span class="ver">v8</span></div><p>First public version. It asked for name and passport number and had an AI write a cover letter to the Ministry.</p></li>
+      <li class="cut"><div class="when"><time datetime="2026-10-13">13 Oct</time><span class="ver">v9</span></div><p>Two legal advisers working with foreigners reviewed it. <del>AI cover letter</del>: plays no role in the procedure. <del>Name and passport fields</del>: no purpose, so no reason to collect them under GDPR. Both removed, along with the AI backend. No-debt certificates now appear only where the law requires them. Ukrainian added.</p></li>
+      <li><div class="when"><time datetime="2026-10-14">14 Oct</time><span class="ver">v10–v12</span></div><p>Tax assessment vs. tax return, separate rules for the first business year and the flat-rate tax. The income calculator, then actual housing costs with service charges, then the lawyer's income formula.</p></li>
+      <li><div class="when"><time datetime="2026-10-15">15 Oct</time><span class="ver">v13</span></div><p>12 control cases sent to a lawyer, 12 confirmed. New hint: in a household with two adults, the second income can be counted too.</p></li>
+      <li><div class="when"><time datetime="2026-10-24">24 Oct</time><span class="ver">v14–v15</span></div><p>A user in a developer community chat saw the date field as mm/dd/yyyy. Replaced the browser date picker with day, month and year lists in the site's language.</p></li>
+      <li><div class="when"><time datetime="2026-10-27">27 Oct</time><span class="ver">v16–v17</span></div><p>Paid add-on removed: the tool is free for good. English interface added. Sent to eight regional integration centres for foreigners.</p></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="h-nums">
+    <h2 id="h-nums">In numbers</h2>
+    <div class="nums">
+      <div><b>17</b><span>versions in 16 days</span></div>
+      <div><b>4</b><span>languages: CZ, UA, RU, EN</span></div>
+      <div><b>319</b><span>automated checks before every release</span></div>
+      <div><b>0</b><span>names or passport numbers collected</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-how">
+    <h2 id="h-how">How I work</h2>
+    <ol class="how">
+      <li><div><h3>Start from the real process</h3><p>I map how the decision is actually made before I decide where AI belongs, and sometimes it doesn't belong at all.</p></div></li>
+      <li><div><h3>Check with the people who know</h3><p>Lawyers, advisers and users review every important rule. I turn their answers into test cases.</p></div></li>
+      <li><div><h3>Ship fast, and don't break what works</h3><p>I build with AI coding tools, and every release runs end-to-end browser tests in all four languages, so new changes don't break old ones.</p></div></li>
+    </ol>
+    <p class="small">Stack: Cloudflare Workers and KV, plain JavaScript, the Claude API with forced tool calls, Node test runner, Playwright end-to-end tests, an evaluation script with reference labels. Claude is my coding partner; requirements, test cases and decisions are mine.</p>
+  </section>
+
+  <section aria-labelledby="h-also">
+    <h2 id="h-also">Also building</h2>
+    <div class="also">
+      <h3>Pravoved</h3>
+      <p>An AI assistant that helps people in Kazakhstan draft pre-court claims under Kazakh law. Built on the Claude API and Cloudflare Workers. Ask me for a demo.</p>
+    </div>
+  </section>
+
+  <footer>
+    <h2>Let's talk</h2>
+    <p>I'm looking for a team where I can do this kind of work: Data & AI, AI engineering, or turning a messy process into a working tool. Write to me at <span class="mail">sanzharsagyn4@gmail.com</span>.</p>
+  </footer>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var ZM = { single:5500, first:5000, adult:3750, k0:2480, k6:3050, k15:3490 };
+  var RENT = [13380,16190,18570,19710,19820], ENERGY = [2300,2800,3300,3800,4300];
+  function kc(n){ return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g," ") + " Kč"; }
+  function v(id){ return parseInt(document.getElementById(id).value,10) || 0; }
+  function calc(){
+    var a = Math.max(1, v("cAdults")), k0 = v("cK0"), k6 = v("cK6"), k15 = v("cK15");
+    var n = a + k0 + k6 + k15;
+    var zm = n === 1 ? ZM.single : ZM.first + (a - 1) * ZM.adult + k0 * ZM.k0 + k6 * ZM.k6 + k15 * ZM.k15;
+    var i = Math.min(n, 5) - 1, house = RENT[i] + ENERGY[i];
+    document.getElementById("oZm").textContent = kc(zm);
+    document.getElementById("oHouse").textContent = kc(house);
+    document.getElementById("oNeed").textContent = kc(zm + house);
+  }
+  ["cAdults","cK0","cK6","cK15"].forEach(function(id){ document.getElementById(id).addEventListener("change", calc); });
+  calc();
+
+  fetch("/claims/eval-results.json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (ev) {
+    if (!ev || !ev.models || !ev.models.haiku) return;
+    var h = ev.models.haiku.summary, el = document.getElementById("featStats");
+    el.innerHTML = '<div><b>' + h.recall + '%</b><span>of reference facts found by Haiku 5.5</span></div>' +
+      '<div><b>' + h.decisionsCorrect + ' of ' + h.claims + '</b><span>claims with the correct recommendation</span></div>' +
+      '<div><b>' + h.injectionsCaught + ' of ' + h.injectionsExpected + '</b><span>hidden instructions caught</span></div>' +
+      '<div><b>$' + Number(h.costPerClaimUsd).toFixed(4) + '</b><span>model cost per claim</span></div>';
+    el.hidden = false;
+  }).catch(function () {});
+  fetch("/site.json", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (s) {
+    if (s && s.github) document.getElementById("codeLink").innerHTML = '<a class="btn ghost" href="' + s.github + '" target="_blank" rel="noopener">Read the code</a>';
+  }).catch(function () {});
+
+  var t, toast = document.getElementById("toast");
+  function show(msg){ toast.textContent = msg; toast.classList.add("on"); clearTimeout(t); t = setTimeout(function(){ toast.classList.remove("on"); }, 1800); }
+  document.getElementById("copyMail").addEventListener("click", function(){
+    var mail = "sanzharsagyn4@gmail.com", node = document.getElementById("mailText");
+    function sel(){ try { var r = document.createRange(); r.selectNodeContents(node); var s = getSelection(); s.removeAllRanges(); s.addRange(r); } catch(e){} show("Email selected: press Ctrl+C"); }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(mail).then(function(){ show("Email copied"); }, sel);
+      else sel();
+    } catch(e){ sel(); }
+  });
+})();
+</script>
+
+</body>
+</html>
