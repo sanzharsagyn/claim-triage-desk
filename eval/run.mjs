@@ -61,11 +61,11 @@ out.endpoint = local ? "local" : base;
 if (!local || process.argv.includes("--publish-local")) fs.writeFileSync(path.join(here, "../public/claims/eval-results.json"), JSON.stringify(out, null, 1));
 
 const lines = ["# Evaluation results", "", "Run " + out.ranAt + " on " + out.documents + " documents in " + CLAIMS.length + " claims (samples " + SAMPLES_VERSION + ").", "",
-  "| Model | Precision | Recall | F1 | Quotes rejected | Injections caught | False flags | Decisions correct | Median latency | Cost per claim |",
-  "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"];
+  "| Model | Precision | Recall | Recall on scans | F1 | Quotes rejected | Injections caught | False flags | Decisions correct | Median latency | Cost per claim |",
+  "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"];
 for (const m of done) {
   const s = out.models[m].summary;
-  lines.push("| " + out.models[m].modelId + " | " + s.precision + "% | " + s.recall + "% | " + s.f1 + "% | " + s.rejectedByValidation + " | " + s.injectionsCaught + "/" + s.injectionsExpected + " | " + s.falseInjectionFlags + " | " + s.decisionsCorrect + "/" + s.claims + " | " + (s.latencyP50 / 1000).toFixed(1) + " s | $" + s.costPerClaimUsd + " |");
+  lines.push("| " + out.models[m].modelId + " | " + s.precision + "% | " + s.recall + "% | " + (s.scans ? s.scans.recall + "%" : "–") + " | " + s.f1 + "% | " + s.rejectedByValidation + " | " + s.injectionsCaught + "/" + s.injectionsExpected + " | " + s.falseInjectionFlags + " | " + s.decisionsCorrect + "/" + s.claims + " | " + (s.latencyP50 / 1000).toFixed(1) + " s | $" + s.costPerClaimUsd + " |");
 }
 lines.push("", "## Misses and extra facts", "");
 for (const m of done) {
@@ -75,4 +75,4 @@ for (const m of done) {
 }
 fs.writeFileSync(path.join(here, local ? "RESULTS.local.md" : "RESULTS.md"), lines.join("\n") + "\n");
 if (Object.keys(failed).length) console.log("\nNot evaluated: " + Object.keys(failed).map(function (m) { return m + " (" + failed[m] + ")"; }).join(", "));
-console.log("\nWrote public/claims/eval-results.json and eval/RESULTS.md. Deploy again to publish them: npx wrangler deploy");
+console.log(local && !process.argv.includes("--publish-local") ? "\nWrote eval/RESULTS.local.md only." : "\nWrote public/claims/eval-results.json and eval/" + (local ? "RESULTS.local.md" : "RESULTS.md") + ". Deploy again to publish them: npx wrangler deploy");

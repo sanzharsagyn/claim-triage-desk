@@ -1,8 +1,8 @@
-// Eight fictional claims, 24 documents, with gold labels.
+// Eleven fictional claims, 33 documents (two of them scans), with gold labels.
 // Used three ways: the demo page (featured claims), the Worker (sample runs are cached),
 // and the evaluation script (eval/run.mjs). All people, clinics and policies are invented.
 
-export const SAMPLES_VERSION = "2026-10-27.1";
+export const SAMPLES_VERSION = "2026-10-28.1";
 
 export const CLAIMS = [
   {
@@ -56,6 +56,20 @@ export const CLAIMS = [
       ["med", "exam_date", "2026-08-14"], ["med", "injury_date", "2026-08-14"], ["med", "diagnosis_code", "S93.4"],
       ["inv", "invoice_item", "1200"], ["inv", "invoice_item", "900"], ["inv", "invoice_item", "2300"], ["inv", "invoice_total", "18400"],
       ["dpn", "sick_leave_start", "2026-08-18"], ["dpn", "sick_leave_end", "2026-09-05"], ["dpn", "diagnosis_code", "S93.4"] ] },
+  },
+  {
+    id: "CL-2026-02755", client: "Marek Dvořák", policy: "DEMO-551730", coverFrom: "2023-01-01", received: "2026-09-28",
+    what: "Collarbone fracture, scanned paperwork", featured: true,
+    docs: [
+      { id: "form", tab: "Claim form", lang: "cs", title: "Oznámení pojistné události: úraz",
+        text: "Pojištěný: Marek Dvořák, nar. 22. 6. 1983\nČíslo pojistné smlouvy: DEMO-551730\n\nDatum úrazu: 14. 8. 2026\nMísto: cyklostezka Liberec – Jablonec\nPopis události: Na kole jsem dostal smyk na mokrém povrchu a spadl na pravé rameno.\n\nPožaduji plnění za: pobyt v nemocnici, pracovní neschopnost\n\nPřílohy: propouštěcí zpráva (sken), potvrzení o DPN (foto)\n\nV Liberci dne 28. 9. 2026\nM. Dvořák" },
+      { id: "disch", tab: "Discharge report", lang: "cs", title: "Propouštěcí zpráva (sken)", scan: "/claims/scans/CL-2026-02755-discharge.jpg", mime: "image/jpeg", scanKind: "Flatbed scan" },
+      { id: "dpn", tab: "Sick-leave record", lang: "cs", title: "Potvrzení o DPN (foto z telefonu)", scan: "/claims/scans/CL-2026-02755-sick-leave.jpg", mime: "image/jpeg", scanKind: "Phone photo" },
+    ],
+    gold: { rec: "approve", injection: [], facts: [
+      ["form", "injury_date", "2026-08-14"], ["form", "benefit_requested", "hospital"], ["form", "benefit_requested", "sick_leave"],
+      ["disch", "admission_date", "2026-08-14"], ["disch", "discharge_date", "2026-08-16"], ["disch", "injury_date", "2026-08-14"], ["disch", "diagnosis_code", "S42.0"],
+      ["dpn", "sick_leave_start", "2026-08-14"], ["dpn", "sick_leave_end", "2026-09-25"], ["dpn", "diagnosis_code", "S42.0"] ] },
   },
   {
     id: "CL-2026-00418", client: "Aigerim Bekova", policy: "DEMO-190344", coverFrom: "2023-05-01", received: "2026-03-27",
@@ -133,6 +147,38 @@ export const CLAIMS = [
       ["form", "injury_date", "2026-09-03"], ["form", "benefit_requested", "sick_leave"],
       ["er", "exam_date", "2026-09-03"], ["er", "injury_date", "2026-09-03"], ["er", "diagnosis_code", "S83.6"],
       ["dpn", "sick_leave_start", "2026-09-04"], ["dpn", "sick_leave_end", "2026-09-30"], ["dpn", "diagnosis_code", "M54.5"] ] },
+  },
+  {
+    id: "CL-2026-02840", client: "Lenka Procházková", policy: "DEMO-462190", coverFrom: "2022-05-01", received: "2026-10-14",
+    what: "Ankle sprain, earlier injury in the history",
+    docs: [
+      { id: "form", tab: "Claim form", lang: "cs", title: "Oznámení pojistné události: úraz",
+        text: "Pojištěná: Lenka Procházková, nar. 12. 4. 1985\nČíslo pojistné smlouvy: DEMO-462190\n\nDatum úrazu: 20. 9. 2026\nMísto: Brno, schodiště v práci\nPopis události: Na schodech jsem šlápla vedle schodu a podvrtla si pravý kotník. Stejný kotník jsem si už jednou zranila v roce 2019.\n\nPožaduji plnění za: pracovní neschopnost\n\nV Brně dne 14. 10. 2026\nL. Procházková" },
+      { id: "er", tab: "Emergency report", lang: "cs", title: "Zpráva z urgentního příjmu",
+        text: "Úrazová nemocnice Brno-Jih, urgentní příjem\nPacientka: Lenka Procházková, nar. 12. 4. 1985\n\nDatum a čas vyšetření: 20. 9. 2026, 16:05\n\nAnamnéza: Dnes odpoledne v práci došlápla vedle schodu, inverzní mechanismus pravého hlezna.\nOsobní anamnéza: 2019 zlomenina zevního kotníku vpravo (S82.6), léčena konzervativně. 2023 appendektomie.\nObjektivně: otok a hematom laterálně, hlezno stabilní.\nRTG 20. 9. 2026: bez čerstvé traumatické léze, stav po zhojené zlomenině zevního kotníku.\nDiagnóza: S93.4 Podvrtnutí a natažení hlezna vpravo\nTerapie: elastická bandáž, ortéza, chlazení.\nDoporučení: pracovní neschopnost, kontrola u praktického lékaře 4. 10. 2026.\n\nMUDr. Pavel Sedláček" },
+      { id: "dpn", tab: "Sick-leave record", lang: "cs", title: "Potvrzení o dočasné pracovní neschopnosti (výpis)",
+        text: "Pojištěnec: Lenka Procházková\n\nZačátek DPN: 21. 9. 2026\nUkončení DPN: 12. 10. 2026\nDiagnóza: S93.4\n\nOšetřující lékař: MUDr. Hana Králová\nDatum vystavení: 13. 10. 2026" },
+    ],
+    gold: { rec: "approve", injection: [], facts: [
+      ["form", "injury_date", "2026-09-20"], ["form", "benefit_requested", "sick_leave"],
+      ["er", "exam_date", "2026-09-20"], ["er", "injury_date", "2026-09-20"], ["er", "diagnosis_code", "S93.4"],
+      ["dpn", "sick_leave_start", "2026-09-21"], ["dpn", "sick_leave_end", "2026-10-12"], ["dpn", "diagnosis_code", "S93.4"] ] },
+  },
+  {
+    id: "CL-2026-02902", client: "Ondřej Beneš", policy: "DEMO-730418", coverFrom: "2020-01-01", received: "2026-03-02",
+    what: "Knee injury skiing in Austria, German documents",
+    docs: [
+      { id: "form", tab: "Claim form", lang: "cs", title: "Oznámení pojistné události: úraz",
+        text: "Pojištěný: Ondřej Beneš, nar. 30. 1. 1990\nČíslo pojistné smlouvy: DEMO-730418\n\nDatum úrazu: 7. 2. 2026\nMísto: Rakousko, Kaprun, sjezdovka\nPopis události: Při lyžování jsem upadl a zkroutil si levé koleno. Ošetření proběhlo v Rakousku.\n\nPožaduji plnění za: pobyt v nemocnici, náklady na ošetření v zahraničí\n\nV Plzni dne 2. 3. 2026\nO. Beneš" },
+      { id: "disch", tab: "Discharge letter", lang: "de", title: "Entlassungsbrief",
+        text: "Alpenklinik Tauern (Musterdokument)\nAbteilung für Unfallchirurgie\n\nPatient: Ondřej Beneš, geb. 30.01.1990\n\nAufnahme: 07.02.2026\nEntlassung: 10.02.2026\n\nAnamnese: Skiunfall am 07.02.2026 gegen 11 Uhr, Verdrehtrauma des linken Knies.\nDiagnose: S83.5 Verstauchung und Zerrung des Kniegelenks mit Beteiligung des vorderen Kreuzbandes, links\nTherapie: MRT des linken Knies, Punktion des Kniegelenks, Knieorthese.\nEmpfehlung: Physiotherapie, Kontrolle in Tschechien in 2 Wochen.\n\nOA Dr. Stefan Brunner" },
+      { id: "inv", tab: "Invoice", lang: "de", title: "Rechnung Nr. 2026-00417",
+        text: "Alpenklinik Tauern GmbH (Musterdokument)\nRechnung Nr. 2026-00417\nRechnungsdatum: 12.02.2026\nPatient: Ondřej Beneš\n\nStationärer Aufenthalt, 3 Nächte: EUR 1.240,00\nMRT linkes Knie: EUR 360,00\nKnieorthese: EUR 95,00\n\nGesamtbetrag: EUR 1.695,00\nZahlbar binnen 30 Tagen." },
+    ],
+    gold: { rec: "approve", injection: [], facts: [
+      ["form", "injury_date", "2026-02-07"], ["form", "benefit_requested", "hospital"], ["form", "benefit_requested", "treatment_abroad"],
+      ["disch", "admission_date", "2026-02-07"], ["disch", "discharge_date", "2026-02-10"], ["disch", "injury_date", "2026-02-07"], ["disch", "diagnosis_code", "S83.5"],
+      ["inv", "invoice_item", "1240"], ["inv", "invoice_item", "360"], ["inv", "invoice_item", "95"], ["inv", "invoice_total", "1695"] ] },
   },
 ];
 

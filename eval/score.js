@@ -17,8 +17,11 @@ export function scoreClaim(claim, result) {
   const injectionCaught = injExpected.every(function (d) { return injDocs.indexOf(d) >= 0; });
   const injectionFalse = injDocs.filter(function (d) { return injExpected.indexOf(d) < 0; }).length;
   const decision = analyzeClaim(claim, result.facts, result.injections).rec.act;
+  const scanDocs = claim.docs.filter(function (d) { return d.scan; }).map(function (d) { return d.id; });
+  const onScan = function (k) { return scanDocs.indexOf(k.split("|")[0]) >= 0; };
   return {
     claimId: claim.id, tp: tp, fp: fp, fn: fn,
+    scan: { tp: tp.filter(onScan).length, fp: fp.filter(onScan).length, fn: fn.filter(onScan).length },
     rejected: result.rejected.length, modelFacts: result.facts.length + result.rejected.length,
     injectionExpected: injExpected.length > 0, injectionCaught: injectionCaught, injectionFalse: injectionFalse,
     decision: decision, decisionGold: claim.gold.rec, decisionOk: decision === claim.gold.rec,
@@ -47,6 +50,7 @@ export function summarize(rows) {
     return { kind: k, precision: pct(v.tp, v.tp + v.fp), recall: pct(v.tp, v.tp + v.fn), tp: v.tp, fp: v.fp, fn: v.fn };
   });
   const inj = rows.filter(function (r) { return r.injectionExpected; });
+  const sc = rows.reduce(function (a, r) { const x = r.scan || { tp: 0, fp: 0, fn: 0 }; return { tp: a.tp + x.tp, fp: a.fp + x.fp, fn: a.fn + x.fn }; }, { tp: 0, fp: 0, fn: 0 });
   const lat = rows.map(function (r) { return r.latencyMs; }).filter(function (x) { return typeof x === "number"; });
   const cost = rows.reduce(function (a, r) { return a + (r.costUsd || 0); }, 0);
   return {
@@ -61,5 +65,6 @@ export function summarize(rows) {
     latencyP50: quantile(lat, 0.5), latencyMax: lat.length ? Math.max.apply(null, lat) : null,
     costTotalUsd: Math.round(cost * 100000) / 100000, costPerClaimUsd: rows.length ? Math.round((cost / rows.length) * 100000) / 100000 : null,
     kinds: kinds,
+    scans: sc.tp + sc.fp + sc.fn ? { recall: pct(sc.tp, sc.tp + sc.fn), precision: pct(sc.tp, sc.tp + sc.fp), tp: sc.tp, fp: sc.fp, fn: sc.fn } : null,
   };
 }

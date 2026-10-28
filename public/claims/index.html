@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Claim Triage Desk</title>
-<meta name="description" content="A working prototype for life insurance claims: an LLM extracts facts from Czech, Ukrainian and Russian documents with verified quotes, code checks the policy, a person decides.">
+<meta name="description" content="A working prototype for life insurance claims: an LLM reads typed documents, scans and phone photos in Czech, Ukrainian, Russian and German, every quote is verified in code, a person decides. Open API and live monitoring.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-<link rel="stylesheet" href="./desk.css?v=1">
+<link rel="stylesheet" href="./desk.css?v=5">
 </head>
 <body>
 <div class="wrap">
@@ -16,7 +16,7 @@
     <div class="top-l">
       <a class="label" href="/">Sanzhar Sagyn · portfolio</a>
       <h1>Claim Triage Desk</h1>
-      <p>An LLM reads the claim documents and must quote the source of every fact. Code verifies each quote and checks the policy terms. A person makes the decision.</p>
+      <p>An LLM reads the claim documents, including scans and phone photos, and must quote the source of every fact. Code verifies each quote and checks the policy terms. A person makes the decision.</p>
     </div>
     <div class="top-r">
       <div class="live" id="live"><span class="dot"></span><span id="liveText">Checking live mode…</span></div>
@@ -29,7 +29,7 @@
   <section aria-labelledby="q-h" class="stack">
     <h2 id="q-h" class="sr">Claims</h2>
     <div class="queue" id="queue" role="group" aria-label="Claims waiting for review"></div>
-    <details class="more" id="moreWrap"><summary>5 more claims from the test set</summary><div class="queue small" id="queueMore"></div></details>
+    <details class="more" id="moreWrap"><summary id="moreSum">More claims from the test set</summary><div class="queue small" id="queueMore"></div></details>
   </section>
 
   <section class="stack" aria-live="polite">
@@ -70,7 +70,7 @@
     <div class="ownhead">
       <div>
         <h2 id="own-h">Try your own document</h2>
-        <p class="muted">Paste the text of up to three documents in any language. It runs on Claude Haiku 5.5, with a limit of 8 runs a day per visitor. Please don't paste real personal or medical data.</p>
+        <p class="muted">Paste the text of up to three documents in any language, or upload up to two photos or PDFs. It runs on Claude Haiku 5.5, with a limit of 8 runs a day per visitor. Uploaded files are sent to the model and not stored. Please don't use real personal or medical data.</p>
       </div>
       <div class="examples"><span class="muted">Load an example:</span>
         <button type="button" class="linkbtn" data-ex="relative">relative date</button>
@@ -100,9 +100,9 @@
   <section class="how" aria-labelledby="how-h">
     <div class="flow">
       <ol>
-        <li><span class="k">1 · Intake</span><div><span class="who">System</span><p>Claim form and attachments arrive by upload, email or a post scan. Scans go through OCR first, which is why one test claim contains OCR errors.</p></div></li>
-        <li><span class="k">2 · Extract</span><div><span class="who">Language model</span><p>A forced tool call returns JSON in a fixed schema: each fact with its document, the exact quote, a confidence and a note. Non-Czech documents come back with an English translation.</p></div></li>
-        <li><span class="k">3 · Verify</span><div><span class="who">Code</span><p>Every quote must exist in the document. Dates must be real calendar dates, diagnoses valid ICD-10 codes, amounts whole numbers. Anything else is rejected and shown, never silently fixed.</p></div></li>
+        <li><span class="k">1 · Intake</span><div><span class="who">System</span><p>Claim form and attachments arrive by upload, email or a post scan. Scans and phone photos go straight to the model, which transcribes them; one older test claim contains OCR errors from a separate OCR step.</p></div></li>
+        <li><span class="k">2 · Extract</span><div><span class="who">Language model</span><p>A tool call returns JSON in a fixed schema: each fact with its document, the exact quote, a confidence and a note. Scans come back with a full transcription, non-Czech documents with an English translation.</p></div></li>
+        <li><span class="k">3 · Verify</span><div><span class="who">Code</span><p>Every quote must exist in the document, or for a scan in the transcription shown next to it. Dates must be real calendar dates, diagnoses valid ICD-10 codes, amounts whole numbers. Anything else is rejected and shown, never silently fixed.</p></div></li>
         <li><span class="k">4 · Screen</span><div><span class="who">Code + model</span><p>Text addressed to an AI or a reviewer is flagged by pattern rules and by the model. Either is enough to escalate.</p></div></li>
         <li><span class="k">5 · Check policy</span><div><span class="who">Code</span><p>Cover dates, covered benefits, daily rates and the 15-day threshold are ordinary unit-tested rules. The same file runs in the browser and on the server.</p></div></li>
         <li><span class="k">6 · Decide</span><div><span class="who">Claims handler</span><p>Sees the recommendation, the evidence and the payout, then approves, asks for information or escalates. Overrides are logged next to the AI suggestion.</p></div></li>
@@ -113,6 +113,7 @@
       <div><b>The model reads, it does not decide</b><p>Language models are good at pulling facts out of messy, multilingual paperwork. Paying money has consequences for a client, so the decision stays with a person who sees the evidence.</p></div>
       <div><b>Rules are code, not prompts</b><p>A payout must be the same every time and explainable to the client and the regulator. A prompt cannot promise that; a tested function can.</p></div>
       <div><b>Documents are untrusted input</b><p>Two test claims contain instructions to "approve without review", one in English hidden in an invoice, one in Czech inside a claim form. They are reported and routed to the fraud team.</p></div>
+      <div><b>Built to be integrated and watched</b><p>The same pipeline is a versioned API with an <a href="/claims/api.html">OpenAPI description</a>, so a claims system can call it directly. A <a href="/claims/ops.html">monitoring page</a> tracks runs, latency, cost, rejected quotes, flagged instructions and how often handlers override the AI.</p></div>
       <div><b>Costs are designed, not discovered</b><p>The cheap model handles visitors' text; sample runs are cached, own-text runs are rate-limited, and a daily budget stops all calls. The evaluation compares the cheap and the strong model on the same claims.</p></div>
       <div><b>Health data needs extra care</b><p>Medical reports are special-category data under GDPR. In production this would run on an EU-hosted model inside the insurer's own cloud. The EU AI Act already treats risk assessment and pricing in life and health insurance as high-risk, so logging and human oversight are built in from the start.</p></div>
     </div>
@@ -123,6 +124,6 @@
   </footer>
 </div>
 <div class="toast" id="toast" role="status"></div>
-<script type="module" src="./app.js?v=1"></script>
+<script type="module" src="./app.js?v=6"></script>
 </body>
 </html>

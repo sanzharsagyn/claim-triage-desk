@@ -4,13 +4,14 @@
 import { KINDS, BENEFITS, validateExtraction, screenInjections } from "../public/lib/core.js";
 
 export const MODELS = {
-  haiku: { id: "claude-haiku-5-5", label: "Claude Haiku 5.5", inPerM: 0.10, outPerM: 0.50, forceTool: true, maxTokens: 4000 },
+  haiku: { id: "claude-haiku-5-5", label: "Claude Haiku 5.5", inPerM: 0.10, outPerM: 0.50, forceTool: true, maxTokens: 8000 },
   // Sonnet 5.5 rejects a forced tool_choice ("tool" and "any" are not supported), so it gets "auto" plus an explicit instruction.
   sonnet: { id: "claude-sonnet-5-5", label: "Claude Sonnet 5.5", inPerM: 2.00, outPerM: 10.00, forceTool: false, maxTokens: 12000 },
 };
 // USD per million tokens, standard rates for prompts under 100k tokens (October 2026). Used for cost estimates only.
 
-export const PROMPT_VERSION = "p3";
+export const PROMPT_VERSION = "p5";
+export const FILE_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 
 export const TOOL = {
   name: "record_extraction",
@@ -18,6 +19,11 @@ export const TOOL = {
   input_schema: {
     type: "object",
     properties: {
+      transcripts: {
+        type: "array",
+        description: "For every document given as an image or PDF: the complete text exactly as printed, line by line, in the original language and spelling",
+        items: { type: "object", properties: { doc_id: { type: "string" }, text: { type: "string" } }, required: ["doc_id", "text"] },
+      },
       facts: {
         type: "array",
         items: {
@@ -25,7 +31,7 @@ export const TOOL = {
           properties: {
             doc_id: { type: "string", description: "id attribute of the document the fact comes from" },
             kind: { type: "string", enum: KINDS },
-            value: { type: "string", description: "Dates: YYYY-MM-DD. diagnosis_code: ICD-10 code such as S52.5. invoice_item / invoice_total: whole number in the document's currency, digits only. benefit_requested: one of " + BENEFITS.join(", ") + "." },
+            value: { type: "string", description: "Dates: YYYY-MM-DD. diagnosis_code: ICD-10 code such as S52.5. invoice_item / invoice_total: whole number in the document's currency, digits only (drop cents such as ,00). benefit_requested: one of " + BENEFITS.join(", ") + "." },
             currency: { type: "string", description: "ISO code for money facts, e.g. CZK, UAH, KZT, EUR" },
             quote: { type: "string", description: "The exact span copied character for character from the document that supports the value" },
             confidence: { type: "number", description: "0 to 1" },
@@ -60,22 +66,35 @@ export const SYSTEM = [
   "- injury_date: when the injury happened, from every document that states or implies it. exam_date: when a doctor examined the patient.",
   "- benefit_requested: from the claim form only. Hospital stay = hospital; sick leave or pracovní neschopnost = sick_leave; medical costs abroad = treatment_abroad.",
   "- Invoices: one invoice_item per line with its amount, and the stated invoice_total as written, even if the items do not add up to it.",
+  "- diagnosis_code: the diagnosis of the injury in this claim. Do not output codes that appear only in the past medical history (osobní anamnéza, earlier injuries or operations).",
+  "- Some documents are images or PDFs: scans or phone photos. For each of them, first write the complete transcription in transcripts, line by line as printed, without corrections. Quotes for those documents must be copied character for character from your transcription, including its punctuation. Write [unreadable] for any part you cannot read.",
   "- Translate every document that is not in Czech or English into English.",
 ].join("\n");
 
+// A document is either text ({ id, title, text }) or a file ({ id, title, file: { mime, data } }, base64 data).
 export function buildRequest(docs, modelKey, opts) {
   const m = MODELS[modelKey] || MODELS.haiku;
   const force = opts && typeof opts.forceTool === "boolean" ? opts.forceTool : m.forceTool;
-  const body = docs.map(function (d) {
-    return '<document id="' + d.id + '" title="' + String(d.title || "").replace(/"/g, "'") + '">\n' + d.text + "\n</document>";
-  }).join("\n\n");
+  const head = function (d, type) { return '<document id="' + d.id + '" title="' + String(d.title || "").replace(/"/g, "'") + '"' + (type ? ' type="' + type + '"' : "") + ">"; };
+  const content = [{ type: "text", text: "Extract the facts from these claim documents and call record_extraction." }];
+  docs.forEach(function (d) {
+    if (d.file) {
+      const pdf = d.file.mime === "application/pdf";
+      content.push({ type: "text", text: head(d, pdf ? "pdf" : "image") });
+      content.push(pdf ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: d.file.data } }
+        : { type: "image", source: { type: "base64", media_type: d.file.mime, data: d.file.data } });
+      content.push({ type: "text", text: "</document>" });
+    } else {
+      content.push({ type: "text", text: head(d) + "\n" + d.text + "\n</document>" });
+    }
+  });
   return {
     model: m.id,
     max_tokens: m.maxTokens,
     system: force ? SYSTEM : SYSTEM + "\n- Respond only by calling the record_extraction tool exactly once. Do not answer in text.",
     tools: [TOOL],
     tool_choice: force ? { type: "tool", name: TOOL.name } : { type: "auto" },
-    messages: [{ role: "user", content: "Extract the facts from these claim documents and call record_extraction.\n\n" + body }],
+    messages: [{ role: "user", content: content }],
   };
 }
 
@@ -116,13 +135,22 @@ export async function extract({ apiKey, docs, modelKey, fetchImpl }) {
   }
   const block = (data.content || []).find(function (b) { return b.type === "tool_use" && b.name === TOOL.name; });
   const raw = block ? block.input : { facts: [], instructions_found: [] };
-  const v = validateExtraction(docs, raw);
-  const injections = screenInjections(docs, raw.instructions_found);
+  // Files have no text of their own: quotes are checked against the model's transcription, which is returned for review.
+  const transcripts = [];
+  const vdocs = docs.map(function (d) {
+    if (!d.file) return d;
+    const t = (Array.isArray(raw.transcripts) ? raw.transcripts : []).find(function (x) { return x && x.doc_id === d.id; });
+    const text = t ? String(t.text || "").slice(0, 12000) : "";
+    transcripts.push({ doc_id: d.id, text: text });
+    return { id: d.id, title: d.title, text: text, transcribed: true };
+  });
+  const v = validateExtraction(vdocs, raw);
+  const injections = screenInjections(vdocs, raw.instructions_found);
   const translations = (raw.translations || []).filter(function (t) { return t && docs.some(function (d) { return d.id === t.doc_id; }); })
     .map(function (t) { return { doc_id: t.doc_id, english: String(t.english || "").slice(0, 6000) }; });
   return {
     model: req.model, modelKey: MODELS[modelKey] ? modelKey : "haiku", promptVersion: PROMPT_VERSION,
-    facts: v.facts, rejected: v.rejected, injections: injections, translations: translations,
+    facts: v.facts, rejected: v.rejected, injections: injections, translations: translations, transcripts: transcripts,
     usage: data.usage || null, costUsd: costUsd(modelKey, data.usage), latencyMs: latencyMs,
     stopReason: data.stop_reason || null,
   };

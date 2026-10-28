@@ -1,51 +1,51 @@
 {
- "ranAt": "2026-10-27T12:42:55.191Z",
- "samplesVersion": "2026-10-27.1",
- "documents": 24,
+ "ranAt": "2026-10-28T17:22:19.744Z",
+ "samplesVersion": "2026-10-28.1",
+ "documents": 33,
  "models": {
   "haiku": {
    "modelId": "claude-haiku-5-5",
-   "promptVersion": "p3",
+   "promptVersion": "p5",
    "summary": {
-    "claims": 8,
-    "precision": 98.6,
+    "claims": 11,
+    "precision": 98.1,
     "recall": 100,
-    "f1": 99.3,
-    "tp": 73,
-    "fp": 1,
+    "f1": 99,
+    "tp": 102,
+    "fp": 2,
     "fn": 0,
     "rejectedByValidation": 0,
     "rejectedShare": 0,
     "injectionsCaught": 2,
     "injectionsExpected": 2,
     "falseInjectionFlags": 0,
-    "decisionsCorrect": 8,
-    "latencyP50": 3254,
-    "latencyMax": 3925,
-    "costTotalUsd": 0.00481,
-    "costPerClaimUsd": 0.0006,
+    "decisionsCorrect": 11,
+    "latencyP50": 3201,
+    "latencyMax": 5799,
+    "costTotalUsd": 0.00779,
+    "costPerClaimUsd": 0.00071,
     "kinds": [
      {
       "kind": "injury_date",
       "precision": 100,
       "recall": 100,
-      "tp": 15,
+      "tp": 21,
       "fp": 0,
       "fn": 0
      },
      {
       "kind": "exam_date",
-      "precision": 80,
+      "precision": 71.4,
       "recall": 100,
-      "tp": 4,
-      "fp": 1,
+      "tp": 5,
+      "fp": 2,
       "fn": 0
      },
      {
       "kind": "admission_date",
       "precision": 100,
       "recall": 100,
-      "tp": 3,
+      "tp": 5,
       "fp": 0,
       "fn": 0
      },
@@ -53,7 +53,7 @@
       "kind": "discharge_date",
       "precision": 100,
       "recall": 100,
-      "tp": 3,
+      "tp": 5,
       "fp": 0,
       "fn": 0
      },
@@ -61,7 +61,7 @@
       "kind": "sick_leave_start",
       "precision": 100,
       "recall": 100,
-      "tp": 8,
+      "tp": 10,
       "fp": 0,
       "fn": 0
      },
@@ -69,7 +69,7 @@
       "kind": "sick_leave_end",
       "precision": 100,
       "recall": 100,
-      "tp": 8,
+      "tp": 10,
       "fp": 0,
       "fn": 0
      },
@@ -77,7 +77,7 @@
       "kind": "diagnosis_code",
       "precision": 100,
       "recall": 100,
-      "tp": 15,
+      "tp": 20,
       "fp": 0,
       "fn": 0
      },
@@ -85,7 +85,7 @@
       "kind": "invoice_item",
       "precision": 100,
       "recall": 100,
-      "tp": 3,
+      "tp": 6,
       "fp": 0,
       "fn": 0
      },
@@ -93,7 +93,7 @@
       "kind": "invoice_total",
       "precision": 100,
       "recall": 100,
-      "tp": 1,
+      "tp": 2,
       "fp": 0,
       "fn": 0
      },
@@ -101,11 +101,18 @@
       "kind": "benefit_requested",
       "precision": 100,
       "recall": 100,
-      "tp": 13,
+      "tp": 18,
       "fp": 0,
       "fn": 0
      }
-    ]
+    ],
+    "scans": {
+     "recall": 100,
+     "precision": 87.5,
+     "tp": 7,
+     "fp": 1,
+     "fn": 0
+    }
    },
    "claims": [
     {
@@ -124,6 +131,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 10,
      "injectionExpected": false,
@@ -132,16 +144,16 @@
      "decision": "approve",
      "decisionGold": "approve",
      "decisionOk": true,
-     "latencyMs": 3903,
+     "latencyMs": 4006,
      "usage": {
-      "input_tokens": 2270,
+      "input_tokens": 2548,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 732,
+      "output_tokens": 776,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -149,7 +161,7 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.000593,
+     "costUsd": 0.0006427999999999999,
      "cached": true
     },
     {
@@ -157,8 +169,8 @@
      "tp": [
       "form|injury_date|2026-03-03",
       "form|benefit_requested|sick_leave",
-      "er|injury_date|2026-02-28",
       "er|exam_date|2026-02-28",
+      "er|injury_date|2026-02-28",
       "er|diagnosis_code|S82.6",
       "dpn|sick_leave_start|2026-02-28",
       "dpn|sick_leave_end|2026-04-10",
@@ -166,6 +178,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 8,
      "injectionExpected": false,
@@ -174,16 +191,16 @@
      "decision": "info",
      "decisionGold": "info",
      "decisionOk": true,
-     "latencyMs": 2981,
+     "latencyMs": 3083,
      "usage": {
-      "input_tokens": 2249,
+      "input_tokens": 2527,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 698,
+      "output_tokens": 701,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -191,7 +208,7 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.0005739,
+     "costUsd": 0.0006032,
      "cached": true
     },
     {
@@ -215,6 +232,11 @@
       "inv|exam_date|2026-08-14"
      ],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 14,
      "injectionExpected": true,
@@ -223,16 +245,16 @@
      "decision": "escalate",
      "decisionGold": "escalate",
      "decisionOk": true,
-     "latencyMs": 3925,
+     "latencyMs": 4638,
      "usage": {
-      "input_tokens": 2475,
+      "input_tokens": 2751,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 1129,
+      "output_tokens": 1149,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -240,7 +262,58 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.000812,
+     "costUsd": 0.0008496,
+     "cached": true
+    },
+    {
+     "claimId": "CL-2026-02755",
+     "tp": [
+      "form|injury_date|2026-08-14",
+      "form|benefit_requested|hospital",
+      "form|benefit_requested|sick_leave",
+      "disch|injury_date|2026-08-14",
+      "disch|admission_date|2026-08-14",
+      "disch|discharge_date|2026-08-16",
+      "disch|diagnosis_code|S42.0",
+      "dpn|sick_leave_start|2026-08-14",
+      "dpn|sick_leave_end|2026-09-25",
+      "dpn|diagnosis_code|S42.0"
+     ],
+     "fp": [
+      "disch|exam_date|2026-08-14"
+     ],
+     "fn": [],
+     "scan": {
+      "tp": 7,
+      "fp": 1,
+      "fn": 0
+     },
+     "rejected": 0,
+     "modelFacts": 11,
+     "injectionExpected": false,
+     "injectionCaught": true,
+     "injectionFalse": 0,
+     "decision": "approve",
+     "decisionGold": "approve",
+     "decisionOk": true,
+     "latencyMs": 5799,
+     "usage": {
+      "input_tokens": 7336,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 0,
+       "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1485,
+      "output_tokens_details": {
+       "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard"
+     },
+     "costUsd": 0.0014761,
      "cached": true
     },
     {
@@ -259,6 +332,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 10,
      "injectionExpected": false,
@@ -267,16 +345,16 @@
      "decision": "approve",
      "decisionGold": "approve",
      "decisionOk": true,
-     "latencyMs": 3322,
+     "latencyMs": 3473,
      "usage": {
-      "input_tokens": 2244,
+      "input_tokens": 2522,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 894,
+      "output_tokens": 915,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -284,8 +362,8 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.0006714,
-     "cached": true
+     "costUsd": 0.0007097000000000001,
+     "cached": false
     },
     {
      "claimId": "CL-2026-01503",
@@ -303,6 +381,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 10,
      "injectionExpected": false,
@@ -311,16 +394,16 @@
      "decision": "approve",
      "decisionGold": "approve",
      "decisionOk": true,
-     "latencyMs": 2831,
+     "latencyMs": 3214,
      "usage": {
-      "input_tokens": 2230,
+      "input_tokens": 2508,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 745,
+      "output_tokens": 785,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -328,8 +411,8 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.0005955,
-     "cached": true
+     "costUsd": 0.0006433,
+     "cached": false
     },
     {
      "claimId": "CL-2026-01688",
@@ -345,6 +428,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 8,
      "injectionExpected": false,
@@ -353,16 +441,16 @@
      "decision": "approve",
      "decisionGold": "approve",
      "decisionOk": true,
-     "latencyMs": 2677,
+     "latencyMs": 2417,
      "usage": {
-      "input_tokens": 2230,
+      "input_tokens": 2508,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 652,
+      "output_tokens": 610,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -370,8 +458,8 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.000549,
-     "cached": true
+     "costUsd": 0.0005558,
+     "cached": false
     },
     {
      "claimId": "CL-2026-02044",
@@ -385,6 +473,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 6,
      "injectionExpected": true,
@@ -393,16 +486,16 @@
      "decision": "escalate",
      "decisionGold": "escalate",
      "decisionOk": true,
-     "latencyMs": 2305,
+     "latencyMs": 2081,
      "usage": {
-      "input_tokens": 2044,
+      "input_tokens": 2324,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 540,
+      "output_tokens": 533,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -410,8 +503,8 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.0004744,
-     "cached": true
+     "costUsd": 0.0004988999999999999,
+     "cached": false
     },
     {
      "claimId": "CL-2026-02391",
@@ -427,6 +520,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 8,
      "injectionExpected": false,
@@ -435,16 +533,16 @@
      "decision": "info",
      "decisionGold": "info",
      "decisionOk": true,
-     "latencyMs": 3254,
+     "latencyMs": 2810,
      "usage": {
-      "input_tokens": 2184,
+      "input_tokens": 2462,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 648,
+      "output_tokens": 653,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -452,20 +550,117 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.0005424,
-     "cached": true
+     "costUsd": 0.0005727000000000001,
+     "cached": false
+    },
+    {
+     "claimId": "CL-2026-02840",
+     "tp": [
+      "form|injury_date|2026-09-20",
+      "form|benefit_requested|sick_leave",
+      "er|exam_date|2026-09-20",
+      "er|injury_date|2026-09-20",
+      "er|diagnosis_code|S93.4",
+      "dpn|sick_leave_start|2026-09-21",
+      "dpn|sick_leave_end|2026-10-12",
+      "dpn|diagnosis_code|S93.4"
+     ],
+     "fp": [],
+     "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "rejected": 0,
+     "modelFacts": 8,
+     "injectionExpected": false,
+     "injectionCaught": true,
+     "injectionFalse": 0,
+     "decision": "approve",
+     "decisionGold": "approve",
+     "decisionOk": true,
+     "latencyMs": 3088,
+     "usage": {
+      "input_tokens": 2704,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 0,
+       "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 632,
+      "output_tokens_details": {
+       "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard"
+     },
+     "costUsd": 0.0005864,
+     "cached": false
+    },
+    {
+     "claimId": "CL-2026-02902",
+     "tp": [
+      "form|injury_date|2026-02-07",
+      "form|benefit_requested|hospital",
+      "form|benefit_requested|treatment_abroad",
+      "disch|admission_date|2026-02-07",
+      "disch|discharge_date|2026-02-10",
+      "disch|injury_date|2026-02-07",
+      "disch|diagnosis_code|S83.5",
+      "inv|invoice_item|1240",
+      "inv|invoice_item|360",
+      "inv|invoice_item|95",
+      "inv|invoice_total|1695"
+     ],
+     "fp": [],
+     "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "rejected": 0,
+     "modelFacts": 11,
+     "injectionExpected": false,
+     "injectionCaught": true,
+     "injectionFalse": 0,
+     "decision": "approve",
+     "decisionGold": "approve",
+     "decisionOk": true,
+     "latencyMs": 3201,
+     "usage": {
+      "input_tokens": 2677,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 0,
+       "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 774,
+      "output_tokens_details": {
+       "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard"
+     },
+     "costUsd": 0.0006547,
+     "cached": false
     }
    ]
   },
   "sonnet": {
    "modelId": "claude-sonnet-5-5",
-   "promptVersion": "p3",
+   "promptVersion": "p5",
    "summary": {
-    "claims": 8,
+    "claims": 11,
     "precision": 100,
     "recall": 100,
     "f1": 100,
-    "tp": 73,
+    "tp": 102,
     "fp": 0,
     "fn": 0,
     "rejectedByValidation": 0,
@@ -473,17 +668,17 @@
     "injectionsCaught": 2,
     "injectionsExpected": 2,
     "falseInjectionFlags": 0,
-    "decisionsCorrect": 8,
-    "latencyP50": 4125,
-    "latencyMax": 7667,
-    "costTotalUsd": 0.09785,
-    "costPerClaimUsd": 0.01223,
+    "decisionsCorrect": 11,
+    "latencyP50": 4901,
+    "latencyMax": 9049,
+    "costTotalUsd": 0.16607,
+    "costPerClaimUsd": 0.0151,
     "kinds": [
      {
       "kind": "injury_date",
       "precision": 100,
       "recall": 100,
-      "tp": 15,
+      "tp": 21,
       "fp": 0,
       "fn": 0
      },
@@ -491,7 +686,7 @@
       "kind": "exam_date",
       "precision": 100,
       "recall": 100,
-      "tp": 4,
+      "tp": 5,
       "fp": 0,
       "fn": 0
      },
@@ -499,7 +694,7 @@
       "kind": "admission_date",
       "precision": 100,
       "recall": 100,
-      "tp": 3,
+      "tp": 5,
       "fp": 0,
       "fn": 0
      },
@@ -507,7 +702,7 @@
       "kind": "discharge_date",
       "precision": 100,
       "recall": 100,
-      "tp": 3,
+      "tp": 5,
       "fp": 0,
       "fn": 0
      },
@@ -515,7 +710,7 @@
       "kind": "sick_leave_start",
       "precision": 100,
       "recall": 100,
-      "tp": 8,
+      "tp": 10,
       "fp": 0,
       "fn": 0
      },
@@ -523,7 +718,7 @@
       "kind": "sick_leave_end",
       "precision": 100,
       "recall": 100,
-      "tp": 8,
+      "tp": 10,
       "fp": 0,
       "fn": 0
      },
@@ -531,7 +726,7 @@
       "kind": "diagnosis_code",
       "precision": 100,
       "recall": 100,
-      "tp": 15,
+      "tp": 20,
       "fp": 0,
       "fn": 0
      },
@@ -539,7 +734,7 @@
       "kind": "invoice_item",
       "precision": 100,
       "recall": 100,
-      "tp": 3,
+      "tp": 6,
       "fp": 0,
       "fn": 0
      },
@@ -547,7 +742,7 @@
       "kind": "invoice_total",
       "precision": 100,
       "recall": 100,
-      "tp": 1,
+      "tp": 2,
       "fp": 0,
       "fn": 0
      },
@@ -555,11 +750,18 @@
       "kind": "benefit_requested",
       "precision": 100,
       "recall": 100,
-      "tp": 13,
+      "tp": 18,
       "fp": 0,
       "fn": 0
      }
-    ]
+    ],
+    "scans": {
+     "recall": 100,
+     "precision": 100,
+     "tp": 7,
+     "fp": 0,
+     "fn": 0
+    }
    },
    "claims": [
     {
@@ -578,6 +780,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 10,
      "injectionExpected": false,
@@ -586,16 +793,16 @@
      "decision": "approve",
      "decisionGold": "approve",
      "decisionOk": true,
-     "latencyMs": 4393,
+     "latencyMs": 4901,
      "usage": {
-      "input_tokens": 2173,
+      "input_tokens": 2451,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 743,
+      "output_tokens": 725,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -603,7 +810,7 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.011776,
+     "costUsd": 0.012152,
      "cached": false
     },
     {
@@ -620,6 +827,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 8,
      "injectionExpected": false,
@@ -628,16 +840,16 @@
      "decision": "info",
      "decisionGold": "info",
      "decisionOk": true,
-     "latencyMs": 4013,
+     "latencyMs": 4739,
      "usage": {
-      "input_tokens": 2152,
+      "input_tokens": 2430,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 667,
+      "output_tokens": 621,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -645,7 +857,7 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.010974,
+     "costUsd": 0.01107,
      "cached": false
     },
     {
@@ -667,6 +879,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 13,
      "injectionExpected": true,
@@ -675,16 +892,16 @@
      "decision": "escalate",
      "decisionGold": "escalate",
      "decisionOk": true,
-     "latencyMs": 7667,
+     "latencyMs": 8150,
      "usage": {
-      "input_tokens": 2378,
+      "input_tokens": 2654,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 1469,
+      "output_tokens": 1475,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -692,7 +909,56 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.019446,
+     "costUsd": 0.020058,
+     "cached": false
+    },
+    {
+     "claimId": "CL-2026-02755",
+     "tp": [
+      "form|injury_date|2026-08-14",
+      "form|benefit_requested|hospital",
+      "form|benefit_requested|sick_leave",
+      "disch|admission_date|2026-08-14",
+      "disch|discharge_date|2026-08-16",
+      "disch|injury_date|2026-08-14",
+      "disch|diagnosis_code|S42.0",
+      "dpn|sick_leave_start|2026-08-14",
+      "dpn|sick_leave_end|2026-09-25",
+      "dpn|diagnosis_code|S42.0"
+     ],
+     "fp": [],
+     "fn": [],
+     "scan": {
+      "tp": 7,
+      "fp": 0,
+      "fn": 0
+     },
+     "rejected": 0,
+     "modelFacts": 10,
+     "injectionExpected": false,
+     "injectionCaught": true,
+     "injectionFalse": 0,
+     "decision": "approve",
+     "decisionGold": "approve",
+     "decisionOk": true,
+     "latencyMs": 8371,
+     "usage": {
+      "input_tokens": 7239,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 0,
+       "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1377,
+      "output_tokens_details": {
+       "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard"
+     },
+     "costUsd": 0.028248,
      "cached": false
     },
     {
@@ -711,6 +977,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 10,
      "injectionExpected": false,
@@ -719,16 +990,16 @@
      "decision": "approve",
      "decisionGold": "approve",
      "decisionOk": true,
-     "latencyMs": 4952,
+     "latencyMs": 5326,
      "usage": {
-      "input_tokens": 2147,
+      "input_tokens": 2425,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 909,
+      "output_tokens": 911,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -736,7 +1007,7 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.013384,
+     "costUsd": 0.01396,
      "cached": false
     },
     {
@@ -755,6 +1026,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 10,
      "injectionExpected": false,
@@ -763,24 +1039,24 @@
      "decision": "approve",
      "decisionGold": "approve",
      "decisionOk": true,
-     "latencyMs": 4096,
+     "latencyMs": 6748,
      "usage": {
-      "input_tokens": 2133,
+      "input_tokens": 2411,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 741,
+      "output_tokens": 1082,
       "output_tokens_details": {
-       "thinking_tokens": 0
+       "thinking_tokens": 315
       },
       "service_tier": "standard",
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.011676,
+     "costUsd": 0.015642,
      "cached": false
     },
     {
@@ -797,6 +1073,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 8,
      "injectionExpected": false,
@@ -805,16 +1086,16 @@
      "decision": "approve",
      "decisionGold": "approve",
      "decisionOk": true,
-     "latencyMs": 4125,
+     "latencyMs": 4866,
      "usage": {
-      "input_tokens": 2133,
+      "input_tokens": 2411,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 623,
+      "output_tokens": 617,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -822,7 +1103,7 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.010496,
+     "costUsd": 0.010992,
      "cached": false
     },
     {
@@ -837,6 +1118,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 6,
      "injectionExpected": true,
@@ -845,16 +1131,16 @@
      "decision": "escalate",
      "decisionGold": "escalate",
      "decisionOk": true,
-     "latencyMs": 3455,
+     "latencyMs": 4547,
      "usage": {
-      "input_tokens": 1947,
+      "input_tokens": 2227,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 541,
+      "output_tokens": 532,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -862,7 +1148,7 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.009304,
+     "costUsd": 0.009774,
      "cached": false
     },
     {
@@ -879,6 +1165,11 @@
      ],
      "fp": [],
      "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
      "rejected": 0,
      "modelFacts": 8,
      "injectionExpected": false,
@@ -887,16 +1178,16 @@
      "decision": "info",
      "decisionGold": "info",
      "decisionOk": true,
-     "latencyMs": 3719,
+     "latencyMs": 4341,
      "usage": {
-      "input_tokens": 2087,
+      "input_tokens": 2365,
       "cache_creation_input_tokens": 0,
       "cache_read_input_tokens": 0,
       "cache_creation": {
        "ephemeral_5m_input_tokens": 0,
        "ephemeral_1h_input_tokens": 0
       },
-      "output_tokens": 662,
+      "output_tokens": 673,
       "output_tokens_details": {
        "thinking_tokens": 0
       },
@@ -904,7 +1195,104 @@
       "inference_geo": "global",
       "speed": "standard"
      },
-     "costUsd": 0.010794,
+     "costUsd": 0.01146,
+     "cached": false
+    },
+    {
+     "claimId": "CL-2026-02840",
+     "tp": [
+      "form|injury_date|2026-09-20",
+      "form|benefit_requested|sick_leave",
+      "er|exam_date|2026-09-20",
+      "er|injury_date|2026-09-20",
+      "er|diagnosis_code|S93.4",
+      "dpn|sick_leave_start|2026-09-21",
+      "dpn|sick_leave_end|2026-10-12",
+      "dpn|diagnosis_code|S93.4"
+     ],
+     "fp": [],
+     "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "rejected": 0,
+     "modelFacts": 8,
+     "injectionExpected": false,
+     "injectionCaught": true,
+     "injectionFalse": 0,
+     "decision": "approve",
+     "decisionGold": "approve",
+     "decisionOk": true,
+     "latencyMs": 3748,
+     "usage": {
+      "input_tokens": 2607,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 0,
+       "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 630,
+      "output_tokens_details": {
+       "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard"
+     },
+     "costUsd": 0.011514,
+     "cached": false
+    },
+    {
+     "claimId": "CL-2026-02902",
+     "tp": [
+      "form|injury_date|2026-02-07",
+      "form|benefit_requested|hospital",
+      "form|benefit_requested|treatment_abroad",
+      "disch|admission_date|2026-02-07",
+      "disch|discharge_date|2026-02-10",
+      "disch|injury_date|2026-02-07",
+      "disch|diagnosis_code|S83.5",
+      "inv|invoice_item|1240",
+      "inv|invoice_item|360",
+      "inv|invoice_item|95",
+      "inv|invoice_total|1695"
+     ],
+     "fp": [],
+     "fn": [],
+     "scan": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "rejected": 0,
+     "modelFacts": 11,
+     "injectionExpected": false,
+     "injectionCaught": true,
+     "injectionFalse": 0,
+     "decision": "approve",
+     "decisionGold": "approve",
+     "decisionOk": true,
+     "latencyMs": 9049,
+     "usage": {
+      "input_tokens": 2580,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 0,
+       "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1604,
+      "output_tokens_details": {
+       "thinking_tokens": 359
+      },
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard"
+     },
+     "costUsd": 0.0212,
      "cached": false
     }
    ]

@@ -42,12 +42,26 @@ test("validator rejects invented quotes, bad formats, unknown docs and kinds", (
   assert.match(v.rejected[6].reasons.join(), /YYYY-MM-DD/);
 });
 
+test("transcribed scans: a quote may differ only in punctuation and layout", () => {
+  const docs = [{ id: "dpn", text: "Den vzniku DPN: 14. 8. 2026\nDiagnóza: S42.0", transcribed: true }];
+  const v = validateExtraction(docs, { facts: [
+    { doc_id: "dpn", kind: "sick_leave_start", value: "2026-08-14", quote: "Den vzniku DPN | 14.8.2026", confidence: 0.9 },
+    { doc_id: "dpn", kind: "sick_leave_end", value: "2026-09-25", quote: "Den ukončení DPN 25. 9. 2026", confidence: 0.9 },
+  ] });
+  assert.equal(v.facts.length, 1);
+  assert.equal(v.facts[0].quote, "Den vzniku DPN: 14. 8. 2026");
+  assert.equal(v.facts[0].match, "ignoring punctuation");
+  assert.equal(v.rejected.length, 1, "different letters or digits are still rejected");
+  const typed = validateExtraction([{ id: "dpn", text: "Den vzniku DPN: 14. 8. 2026" }], { facts: [{ doc_id: "dpn", kind: "sick_leave_start", value: "2026-08-14", quote: "Den vzniku DPN | 14.8.2026", confidence: 0.9 }] });
+  assert.equal(typed.facts.length, 0, "typed documents stay strict");
+});
+
 test("validator survives garbage", () => {
   assert.deepEqual(validateExtraction(c1.docs, null), { facts: [], rejected: [] });
   assert.deepEqual(validateExtraction(c1.docs, { facts: "x" }), { facts: [], rejected: [] });
 });
 
-test("rule-based injection screen: catches both planted injections, no false alarms on 22 clean documents", () => {
+test("rule-based injection screen: catches both planted injections, no false alarms on the clean documents", () => {
   let flagged = 0;
   for (const c of CLAIMS) {
     const hits = screenInjections(c.docs, []);
@@ -81,6 +95,21 @@ test("payouts follow the policy terms", () => {
   assert.equal(pay("CL-2026-01187").total, 0);                           // on hold: date conflict
   assert.equal(pay("CL-2026-01187").proposed, 28 * 400);
   assert.equal(pay("CL-2026-02391").rec.act, "info");                    // sick leave for back pain after a knee injury
+  assert.equal(pay("CL-2026-02755").total, 2 * 600 + 29 * 400);          // scanned claim: 43 sick days
+  assert.equal(pay("CL-2026-02840").total, 8 * 400);                     // 22 sick days; the 2019 diagnosis is history, not this claim
+  assert.equal(pay("CL-2026-02902").total, 3 * 600);                     // Austrian hospital stay; treatment abroad not covered
+});
+
+test("an old diagnosis from the medical history would wrongly hold the claim", () => {
+  const c = CLAIMS.find((x) => x.id === "CL-2026-02840");
+  const facts = goldFacts(c).concat([{ id: "x", doc_id: "er", kind: "diagnosis_code", value: "S82.6", confidence: 0.6 }]);
+  assert.equal(analyzeClaim(c, facts, []).rec.act, "info");
+});
+
+test("scan documents have no text of their own until the model transcribes them", () => {
+  const c = CLAIMS.find((x) => x.id === "CL-2026-02755");
+  assert.equal(c.docs.filter((d) => d.scan).length, 2);
+  assert.deepEqual(screenInjections(c.docs, [{ doc_id: "disch", quote: "anything" }]), []);
 });
 
 test("a cover date after the injury holds the payment", () => {

@@ -8,12 +8,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import worker from "../src/worker.js";
 import { CLAIMS } from "../public/claims/samples.js";
+import { SCAN_TEXTS } from "./scan-texts.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PUB = path.join(here, "../public");
 const PORT = Number(process.env.PORT || 8790);
 const live = process.argv.includes("--live");
-const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json" };
+const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json", ".jpg": "image/jpeg", ".png": "image/png", ".svg": "image/svg+xml", ".pdf": "application/pdf" };
 
 // ---- mock model: finds a plausible quote for each reference fact, like a well-behaved model would ----
 const pad = (n) => String(n).padStart(2, "0");
@@ -23,10 +24,29 @@ function dateQuotes(iso) {
   return [...ocr(d + ". " + m + ". " + y), ...ocr(pad(d) + "." + pad(m) + "." + y)];
 }
 function findIn(text, cands) { for (const c of cands) { const i = text.indexOf(c); if (i >= 0) return c; } return null; }
+// Known scans, recognised by their bytes, so the mock can "read" them. Anything else uploaded gets a canned transcription.
+const SCANS = {};
+for (const c of CLAIMS) for (const d of c.docs) if (d.scan) SCANS[fs.readFileSync(path.join(here, "../public", d.scan)).toString("base64")] = { claim: c, key: c.id + "/" + d.id };
+function parseDocs(content) {
+  const blocks = typeof content === "string" ? [{ type: "text", text: content }] : content;
+  const docs = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    if (b.type !== "text") continue;
+    for (const m of b.text.matchAll(/<document id="([^"]+)" title="[^"]*">\n([\s\S]*?)\n<\/document>/g)) docs.push({ id: m[1], text: m[2] });
+    const f = /^<document id="([^"]+)" title="[^"]*" type="(image|pdf)">$/.exec(b.text);
+    if (f) {
+      const data = blocks[i + 1].source.data, known = SCANS[data];
+      docs.push({ id: f[1], file: true, text: known ? SCAN_TEXTS[known.key] : "MOCK TRANSCRIPTION\nDatum vyšetření: 2. 3. 2026\nDiagnóza: S62.1 Zlomenina zápěstní kosti", claim: known && known.claim });
+    }
+  }
+  return docs;
+}
 function mockAnswer(docs) {
-  const facts = [], instructions = [], translations = [];
+  const facts = [], instructions = [], translations = [], transcripts = [];
   for (const d of docs) {
-    const claim = CLAIMS.find((c) => c.docs.some((x) => x.id === d.id && x.text === d.text));
+    if (d.file) transcripts.push({ doc_id: d.id, text: d.text });
+    const claim = d.claim || CLAIMS.find((c) => c.docs.some((x) => x.id === d.id && x.text === d.text));
     const gold = claim ? claim.gold.facts.filter((g) => g[0] === d.id) : [];
     for (const [, kind, value] of gold) {
       let quote = null;
@@ -38,8 +58,8 @@ function mockAnswer(docs) {
         }
       } else if (kind === "diagnosis_code") quote = findIn(d.text, [value, value.replace("0", "O")]);
       else if (kind === "benefit_requested") quote = findIn(d.text, { hospital: ["pobyt v nemocnici"], sick_leave: ["pracovní neschopnost"], treatment_abroad: ["náklady na ošetření v zahraničí"] }[value] || []);
-      else if (kind === "invoice_item" || kind === "invoice_total") quote = findIn(d.text, [Number(value).toLocaleString("cs-CZ").replace(/ /g, " ") + " грн", value + " грн"]);
-      if (quote) facts.push({ doc_id: d.id, kind, value, quote, confidence: 0.93, currency: /грн/.test(quote) ? "UAH" : undefined });
+      else if (kind === "invoice_item" || kind === "invoice_total") quote = findIn(d.text, [Number(value).toLocaleString("cs-CZ").replace(/ /g, " ") + " грн", value + " грн", "EUR " + Number(value).toLocaleString("de-DE") + ",00"]);
+      if (quote) facts.push({ doc_id: d.id, kind, value, quote, confidence: 0.93, currency: /грн/.test(quote) ? "UAH" : /EUR/.test(quote) ? "EUR" : undefined });
     }
     if (!claim) { // own text: pick obvious dates and codes
       const m = /(\d{1,2})\. ?(\d{1,2})\. ?(20\d\d)/.exec(d.text);
@@ -48,19 +68,19 @@ function mockAnswer(docs) {
       if (dx) facts.push({ doc_id: d.id, kind: "diagnosis_code", value: dx[1], quote: dx[1], confidence: 0.9 });
     }
     d.text.split("\n").forEach((l) => { if (/AI REVIEW|AI assistant|automatické zpracování/i.test(l)) instructions.push({ doc_id: d.id, quote: l.trim(), why: "Addresses the AI or the review process" }); });
-    if (/[Ѐ-ӿ]{4}/.test(d.text)) translations.push({ doc_id: d.id, english: "[mock translation] " + d.text.split("\n")[0] });
+    if (/[Ѐ-ӿ]{4}/.test(d.text) || /\b(Aufnahme|Rechnung|Entlassung)\b/.test(d.text)) translations.push({ doc_id: d.id, english: "[mock translation] " + d.text.split("\n")[0] });
   }
-  return { facts, instructions_found: instructions, translations };
+  return { transcripts, facts, instructions_found: instructions, translations };
 }
 if (!live) {
   const realFetch = globalThis.fetch;
   globalThis.fetch = async (url, init) => {
     if (String(url).startsWith("https://api.anthropic.com/")) {
       const body = JSON.parse(init.body);
-      const docs = [...body.messages[0].content.matchAll(/<document id="([^"]+)" title="[^"]*">\n([\s\S]*?)\n<\/document>/g)].map((m) => ({ id: m[1], text: m[2] }));
+      const docs = parseDocs(body.messages[0].content);
       await new Promise((r) => setTimeout(r, 250));
       const input = mockAnswer(docs);
-      return new Response(JSON.stringify({ content: [{ type: "tool_use", name: "record_extraction", input }], usage: { input_tokens: 2100 + body.messages[0].content.length / 4 | 0, output_tokens: 700 }, stop_reason: "tool_use" }), { status: 200 });
+      return new Response(JSON.stringify({ content: [{ type: "tool_use", name: "record_extraction", input }], usage: { input_tokens: 2100 + JSON.stringify(body.messages[0].content).length / 40 | 0, output_tokens: 700 }, stop_reason: "tool_use" }), { status: 200 });
     }
     return realFetch(url, init);
   };

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sanzhar Sagyn</title>
-<meta name="description" content="Geologist turned AI builder in Czechia: Claim Triage Desk, a working LLM prototype for insurance claims, and Úřadomat, a free tool for foreigners extending their residence.">
+<meta name="description" content="Geologist turned AI builder in Czechia: Claim Triage Desk, a working LLM service for insurance claims that reads scans, with an API and monitoring, and Úřadomat, a free tool for foreigners extending their residence.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,600;0,8..60,700;1,8..60,600&family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
@@ -150,12 +150,13 @@ footer{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--li
   <section class="feat" aria-labelledby="h-feat">
     <div class="eyebrow">Newest · a working prototype, evaluated</div>
     <h2 id="h-feat">Claim Triage Desk</h2>
-    <p>A tool for life insurance claims. An LLM reads Czech, Ukrainian and Russian claim documents and has to quote the exact source of every fact. Code verifies each quote, checks the policy terms and calculates the payout. A claims handler makes the decision, and overrides of the AI are logged.</p>
+    <p>A tool for life insurance claims. An LLM reads claim documents in Czech, Ukrainian, Russian and German, including flatbed scans and phone photos, and has to quote the exact source of every fact. Code verifies each quote, checks the policy terms and calculates the payout. A claims handler makes the decision, and overrides of the AI are logged.</p>
     <ul class="flist">
-      <li><span>Runs live on Claude Haiku 5.5 and Sonnet 5.5 through its own API, with caching, per-visitor limits and a daily budget.</span></li>
+      <li><span>Reads scans and photos directly: the model transcribes the image, and every quote is checked against that transcription, shown next to the original.</span></li>
+      <li><span>A versioned API with an <a href="/claims/api.html">OpenAPI description</a> and a Python client tested on every commit, plus a <a href="/claims/ops.html">monitoring page</a> for runs, latency, cost and AI overrides.</span></li>
       <li><span>Rejects any fact whose quote is not in the document, any impossible date and any invalid ICD-10 code.</span></li>
       <li><span>Catches instructions hidden in documents, such as white text in an invoice telling the AI to approve the claim.</span></li>
-      <li><span>Measured on a test set of 24 documents with reference labels, comparing a cheap and a strong model.</span></li>
+      <li><span>Measured on 33 synthetic documents with reference labels, including distractor dates and an old diagnosis in the medical history, comparing a cheap and a strong model.</span></li>
     </ul>
     <div class="featstats" id="featStats" hidden></div>
     <div class="cta"><a class="btn" href="/claims/">Open the prototype</a><span id="codeLink"></span></div>

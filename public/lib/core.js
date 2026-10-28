@@ -50,6 +50,20 @@ export function findQuote(text, quote) {
   return m ? [m.index, m.index + m[0].length] : null;
 }
 
+// For a model's own transcription of a scan, punctuation and layout are the model's guess
+// (a table cell becomes "Label: value" or "Label | value"). So for transcribed documents only,
+// a quote may also match ignoring everything except letters and digits. Letters and digits must still match in order.
+export function findQuoteLoose(text, quote) {
+  const src = String(text).normalize("NFC"), keep = /[\p{L}\p{N}]/u;
+  let canon = "";
+  const map = [];
+  for (let i = 0; i < src.length; i++) if (keep.test(src[i])) { canon += src[i].toLowerCase(); map.push(i); }
+  const q = [...String(quote || "").normalize("NFC")].filter((c) => keep.test(c)).join("").toLowerCase();
+  if (q.length < 4) return null;
+  const at = canon.indexOf(q);
+  return at < 0 ? null : [map[at], map[at + q.length - 1] + 1];
+}
+
 export function isIsoDate(v) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
   const [y, m, d] = v.split("-").map(Number);
@@ -81,7 +95,8 @@ export function validateExtraction(docs, raw) {
       else value = String(n);
     }
     if (kind === "benefit_requested" && BENEFITS.indexOf(value) < 0) why.push("unknown benefit");
-    const span = doc ? findQuote(doc.text, f.quote) : null;
+    let span = doc ? findQuote(doc.text, f.quote) : null, loose = false;
+    if (doc && !span && doc.transcribed) { span = findQuoteLoose(doc.text, f.quote); loose = !!span; }
     if (doc && !span) why.push("quote not found in the document");
     let conf = Number(f && f.confidence);
     if (!Number.isFinite(conf)) conf = 0.5;
@@ -93,6 +108,7 @@ export function validateExtraction(docs, raw) {
     const out = { id: "f" + (facts.length + 1), doc_id: f.doc_id, kind: kind, value: value, quote: doc.text.slice(span[0], span[1]), span: span, confidence: conf };
     if (f.currency) out.currency = String(f.currency).toUpperCase().slice(0, 3);
     if (f.note) out.note = String(f.note).slice(0, 300);
+    if (loose) out.match = "ignoring punctuation";
     facts.push(out);
   });
   return { facts: facts, rejected: rejected };
@@ -113,7 +129,7 @@ const INJECTION_PATTERNS = [
 export function screenInjections(docs, modelFound) {
   const hits = [];
   docs.forEach(function (d) {
-    const lines = String(d.text).split(/\n/);
+    const lines = String(d.text || "").split(/\n/);
     let pos = 0;
     lines.forEach(function (line) {
       if (INJECTION_PATTERNS.some(function (re) { return re.test(line); }) && line.trim()) {
@@ -124,7 +140,7 @@ export function screenInjections(docs, modelFound) {
   });
   (Array.isArray(modelFound) ? modelFound : []).forEach(function (m) {
     const d = docs.find(function (x) { return x.id === m.doc_id; });
-    const span = d ? findQuote(d.text, m.quote) : null;
+    const span = d && d.text ? findQuote(d.text, m.quote) : null;
     if (!span) return; // the model must quote it too
     const same = hits.find(function (h) { return h.doc_id === m.doc_id && h.span[0] <= span[1] && span[0] <= h.span[1]; });
     if (same) { same.source = "rule+model"; if (m.why) same.why = String(m.why).slice(0, 200); }

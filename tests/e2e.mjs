@@ -48,8 +48,25 @@ t("translation shown", (await p.textContent("#sheet")).includes("English transla
 await p.click('#modelSeg button[data-model="sonnet"]');
 await p.waitForFunction(() => /Sonnet/.test(document.getElementById("runmeta").textContent));
 t("sonnet run meta", (await p.textContent("#runmeta")).includes("Claude Sonnet 5.5"));
+// scanned claim
+await p.click('#modelSeg button[data-model="haiku"]');
+await p.click('.qcard[data-claim="CL-2026-02755"]');
+await p.waitForFunction(() => document.querySelector("#rec h3") && /approve/i.test(document.querySelector("#rec h3").textContent));
+t("scan claim approve 12 800", nbsp(await p.textContent("#rec")).includes("12 800 CZK"));
+t("pipeline counts 2 scans", (await p.textContent("#pipe")).includes("2 scans"));
+await p.click('.tab[data-doc="disch"]');
+t("scan tab tagged", (await p.textContent('.tab[data-doc="disch"]')).includes("SCAN"));
+t("transcription shown with highlights", (await p.textContent("#sheet")).includes("Text the model read from the image") && (await p.$$("#sheet mark.f")).length >= 3);
+t("thumbnail of the scan", !!(await p.$("#thumb img")));
+await p.click("#scanToggle");
+await p.waitForFunction(() => { const i = document.querySelector("#sheet img.scanimg"); return i && i.complete && i.naturalWidth > 1000; });
+t("scan image shown", true);
+await p.click("#scanToggle");
+await p.click('#fields tbody tr:nth-child(9)');
+t("fact on a scan -> transcription highlight", !!(await p.$("#sheet mark.f.hl")));
 // more claims
 await p.click("#moreWrap summary");
+t("more claims count", (await p.textContent("#moreSum")).startsWith("7 more"));
 await p.click('.qcard[data-claim="CL-2026-02391"]');
 await p.waitForFunction(() => document.querySelector("#rec h3") && /Hold/.test(document.querySelector("#rec h3").textContent));
 t("claim 8 dx mismatch -> info", (await p.textContent("#checks")).includes("Different codes"));
@@ -63,6 +80,16 @@ await p.waitForFunction(() => document.getElementById("ownMsg").textContent.star
 t("own claim card", (await p.textContent("#queue")).includes("Your documents"));
 t("own injection flagged", (await p.textContent("#rejected")).includes("not followed"));
 t("own recommendation escalate", /Escalate/.test(await p.textContent("#rec")));
+// own upload: a photo
+await p.click('[data-rm="0"]').catch(() => {});
+await p.setInputFiles('input[data-file="0"]', new URL("../public/claims/scans/CL-2026-02755-sick-leave.jpg", import.meta.url).pathname);
+await p.waitForSelector(".ownfile img");
+t("upload preview after resizing", (await p.textContent(".ownfile")).includes("after resizing"));
+await p.click("#ownRun");
+await p.waitForFunction(() => document.getElementById("ownMsg").textContent.startsWith("Done"), null, { timeout: 10000 });
+t("upload: scan tab and transcription", (await p.textContent("#tabs")).includes("SCAN") && (await p.textContent("#sheet")).includes("MOCK TRANSCRIPTION"));
+const m = await p.evaluate(async () => (await (await fetch("/api/v1/metrics?days=1")).json()).days[0]);
+t("metrics: runs, scans and the logged override", m.runs >= 5 && m.files >= 3 && m.overrides >= 1, m);
 // evaluation
 t("eval section visible", await p.isVisible("#evalSec"));
 t("eval table has both models", (await p.textContent("#evalTable")).includes("Claude Sonnet 5.5"));
@@ -80,7 +107,8 @@ await p.close();
 p = await page();
 await p.goto(U + "/");
 await p.waitForFunction(() => !document.getElementById("featStats").hidden);
-t("portfolio featured stats", nbsp(await p.textContent("#featStats")).includes("8 of 8"));
+t("portfolio featured stats", nbsp(await p.textContent("#featStats")).includes("11 of 11"));
+t("portfolio links API and monitoring", (await p.$$('a[href="/claims/api.html"]')).length >= 1 && (await p.$$('a[href="/claims/ops.html"]')).length >= 1);
 t("portfolio links to /claims/", (await p.$$('a[href="/claims/"]')).length >= 2);
 t("no claude.ai links", !(await p.content()).includes("claude.ai/artifact"));
 t("calculator works", nbsp(await p.textContent("#oNeed")).includes("33 670"));
@@ -90,6 +118,27 @@ const pp = await page({ viewport: { width: 375, height: 800 }, isMobile: true })
 await pp.goto(U + "/");
 t("portfolio phone no h-scroll", await noH(pp));
 t("no page errors", errs.length === 0, errs);
+// API docs and monitoring pages
+p = await page();
+await p.goto(U + "/claims/api.html");
+await p.click("#run");
+await p.waitForFunction(() => /HTTP 200/.test(document.getElementById("runMsg").textContent));
+t("API page: live request returns facts", (await p.textContent("#runMsg")).includes("10 facts"));
+t("API page: curl uses this host", (await p.textContent("#curl1")).includes(U));
+t("API page no h-scroll", await noH(p));
+await p.goto(U + "/claims/ops.html");
+await p.waitForSelector("#tiles .tile .v");
+t("ops: model runs tile", Number(await p.textContent("#tiles .tile .v")) >= 5);
+t("ops: three charts with bars", (await p.$$("#charts .chart")).length === 3 && (await p.$$("#charts path.bar")).length >= 2);
+t("ops: alerts rendered", (await p.$$("#alerts .alert")).length === 5);
+await p.click('#period button[data-days="7"]');
+await p.waitForFunction(() => document.getElementById("sub").textContent.includes("7 days"));
+t("ops: period switch", true);
+t("ops no h-scroll", await noH(p));
+const po = await page({ viewport: { width: 375, height: 800 }, isMobile: true, colorScheme: "dark" });
+await po.goto(U + "/claims/ops.html");
+await po.waitForSelector("#tiles .tile");
+t("ops phone no h-scroll", await noH(po));
 console.log("PASS " + ok + " FAIL " + bad);
 await b.close();
 process.exit(bad ? 1 : 0);

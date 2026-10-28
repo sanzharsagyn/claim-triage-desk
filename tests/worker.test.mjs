@@ -9,7 +9,9 @@ function kv() {
   const m = new Map();
   return { m, get: async (k) => (m.has(k) ? m.get(k) : null), put: async (k, v) => { m.set(k, v); } };
 }
-function env(extra) { return Object.assign({ KV: kv(), ANTHROPIC_API_KEY: "test-key", DAILY_LIMIT: "50", ASSETS: { fetch: async () => new Response("asset") } }, extra || {}); }
+const SCAN_BYTES = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4, 5]);
+const assets = { fetch: async (req) => (new URL(req.url).pathname.startsWith("/claims/scans/") ? new Response(SCAN_BYTES) : new Response("asset")) };
+function env(extra) { return Object.assign({ KV: kv(), ANTHROPIC_API_KEY: "test-key", DAILY_LIMIT: "50", ASSETS: assets }, extra || {}); }
 let calls = [];
 function mockModel(input, status) {
   calls = [];
@@ -19,14 +21,15 @@ function mockModel(input, status) {
     return new Response(JSON.stringify(anthropicResponse(input)), { status: 200 });
   };
 }
-const post = (e, body, ip) => worker.fetch(new Request("https://x/api/extract", { method: "POST", headers: { "content-type": "application/json", "cf-connecting-ip": ip || "1.1.1.1" }, body: JSON.stringify(body) }), e);
+const get = (e, path) => worker.fetch(new Request("https://x" + path), e);
+const post = (e, body, ip, path) => worker.fetch(new Request("https://x" + (path || "/api/extract"), { method: "POST", headers: { "content-type": "application/json", "cf-connecting-ip": ip || "1.1.1.1" }, body: JSON.stringify(body) }), e);
 
 test("request: forced tool call, system prompt, documents wrapped with ids", () => {
   const r = buildRequest(CLAIMS[0].docs, "haiku");
   assert.equal(r.model, "claude-haiku-5-5");
   assert.deepEqual(r.tool_choice, { type: "tool", name: "record_extraction" });
   assert.match(r.system, /untrusted/);
-  assert.match(r.messages[0].content, /<document id="disch"/);
+  assert.match(r.messages[0].content.map((b) => b.text || "").join(""), /<document id="disch"/);
   const s = buildRequest(CLAIMS[0].docs, "sonnet");
   assert.equal(s.model, "claude-sonnet-5-5");
   assert.deepEqual(s.tool_choice, { type: "auto" }, "Sonnet 5.5 does not accept a forced tool call");
@@ -135,4 +138,94 @@ test("routing: health, 405, unknown api, assets", async () => {
   assert.equal((await worker.fetch(new Request("https://x/api/extract"), e)).status, 405);
   assert.equal((await worker.fetch(new Request("https://x/api/nothing"), e)).status, 404);
   assert.equal(await (await worker.fetch(new Request("https://x/claims/"), e)).text(), "asset");
+});
+
+// ---------- v5: scans, API v1, monitoring ----------
+const SCAN_CLAIM = "CL-2026-02755";
+const DISCH_T = "Přijat: 14. 8. 2026   Propuštěn: 16. 8. 2026\nDiagnóza: S42.0 Zlomenina klíční kosti vpravo";
+const SCAN_ANSWER = {
+  transcripts: [{ doc_id: "disch", text: DISCH_T }],
+  facts: [
+    { doc_id: "form", kind: "injury_date", value: "2026-08-14", quote: "Datum úrazu: 14. 8. 2026", confidence: 0.99 },
+    { doc_id: "disch", kind: "admission_date", value: "2026-08-14", quote: "Přijat: 14. 8. 2026", confidence: 0.95 },
+    { doc_id: "disch", kind: "diagnosis_code", value: "S42.0", quote: "S42.0 Zlomenina klíční kosti", confidence: 0.95 },
+    { doc_id: "dpn", kind: "sick_leave_start", value: "2026-08-14", quote: "Den vzniku DPN: 14. 8. 2026", confidence: 0.9 },
+  ],
+  instructions_found: [],
+};
+
+test("a scan is sent to the model as an image, and its facts are checked against the transcription", async () => {
+  const e = env();
+  mockModel(SCAN_ANSWER);
+  const res = await post(e, { claimId: SCAN_CLAIM, model: "haiku" }, null, "/api/v1/extract");
+  assert.equal(res.status, 200);
+  const r = await res.json();
+  const body = JSON.parse(calls[0].init.body);
+  const imgs = body.messages[0].content.filter((b) => b.type === "image");
+  assert.equal(imgs.length, 2);
+  assert.equal(imgs[0].source.media_type, "image/jpeg");
+  assert.equal(imgs[0].source.data, Buffer.from(SCAN_BYTES).toString("base64"));
+  assert.match(body.messages[0].content.map((b) => b.text || "").join(""), /<document id="disch" title="[^"]*" type="image">/);
+  assert.deepEqual(r.facts.map((f) => f.doc_id + ":" + f.kind), ["form:injury_date", "disch:admission_date", "disch:diagnosis_code"]);
+  assert.equal(r.rejected.length, 1, "the sick-leave scan has no transcription, so its quote cannot be verified");
+  assert.deepEqual(r.transcripts.map((t) => t.doc_id), ["disch", "dpn"]);
+  assert.equal(r.transcripts[0].text, DISCH_T);
+  const f = r.facts.find((x) => x.kind === "admission_date");
+  assert.equal(DISCH_T.slice(f.span[0], f.span[1]), "Přijat: 14. 8. 2026");
+});
+
+test("uploaded files: allowed types only, at most two, never cached", async () => {
+  const e = env();
+  mockModel({ transcripts: [{ doc_id: "a", text: "Datum vyšetření: 2. 3. 2026" }], facts: [{ doc_id: "a", kind: "exam_date", value: "2026-03-02", quote: "Datum vyšetření: 2. 3. 2026", confidence: 0.9 }], instructions_found: [] });
+  const file = { mime: "image/png", data: Buffer.from("png-bytes").toString("base64") };
+  const r1 = await (await post(e, { docs: [{ id: "a", title: "Photo", file }] })).json();
+  assert.equal(r1.facts.length, 1);
+  assert.equal(r1.transcripts[0].text, "Datum vyšetření: 2. 3. 2026");
+  await post(e, { docs: [{ id: "a", title: "Photo", file }] });
+  assert.equal(calls.length, 2, "the same upload calls the model again: files are never cached");
+  assert.equal([...e.KV.m.keys()].filter((k) => k.startsWith("x:own")).length, 0, "no upload is stored");
+  assert.equal((await post(e, { docs: [{ id: "a", file: { mime: "application/zip", data: "AAAA" } }] })).status, 400);
+  assert.equal((await post(e, { docs: [{ id: "a", file: { mime: "image/png", data: "not base64!" } }] })).status, 400);
+  assert.equal((await post(e, { docs: [1, 2, 3].map((i) => ({ id: "d" + i, file })) })).status, 400);
+  const pdf = await post(e, { docs: [{ id: "p", title: "PDF", file: { mime: "application/pdf", data: "JVBERi0=" } }] });
+  assert.equal(pdf.status, 200);
+  const sent = JSON.parse(calls[calls.length - 1].init.body).messages[0].content.find((b) => b.type === "document");
+  assert.equal(sent.source.media_type, "application/pdf");
+});
+
+test("metrics count model runs, cost, rejected quotes and handler overrides", async () => {
+  const e = env();
+  mockModel(RAW_CLAIM1, null);
+  await post(e, { claimId: CLAIMS[0].id, model: "haiku" });
+  await post(e, { claimId: CLAIMS[0].id, model: "haiku" }); // cached: not a model run
+  mockModel(null, 529);
+  await post(e, { claimId: CLAIMS[1].id });
+  assert.equal((await post(e, { claimId: "x", ai: "approve", decision: "escalate" }, null, "/api/v1/feedback")).status, 200);
+  assert.equal((await post(e, { ai: "approve", decision: "approve" }, null, "/api/v1/feedback")).status, 200);
+  assert.equal((await post(e, { ai: "approve", decision: "pay" }, null, "/api/v1/feedback")).status, 400);
+  const m = await (await get(e, "/api/v1/metrics?days=7")).json();
+  assert.equal(m.days.length, 7);
+  const d = m.days[6];
+  assert.equal(d.runs, 1);
+  assert.equal(d.byModel.haiku, 1);
+  assert.equal(d.errors, 1);
+  assert.equal(d.facts, 10);
+  assert.ok(d.costUsd > 0);
+  assert.equal(d.decisions, 2);
+  assert.equal(d.overrides, 1);
+  assert.equal(d.latency.reduce((a, b) => a + b, 0), 1);
+});
+
+test("API v1: health, OpenAPI description, old paths still work", async () => {
+  const e = env();
+  const h = await (await get(e, "/api/v1/health")).json();
+  assert.equal(h.version, "v1");
+  assert.ok(h.fileTypes.includes("application/pdf"));
+  const spec = await (await get(e, "/api/openapi.json")).json();
+  assert.equal(spec.openapi, "3.1.0");
+  assert.ok(spec.paths["/api/v1/extract"].post);
+  assert.equal(spec.servers[0].url, "https://x");
+  assert.equal((await get(e, "/api/health")).status, 200);
+  assert.equal((await get(e, "/api/v1/feedback")).status, 405);
+  assert.equal((await get(e, "/api/v1/nothing")).status, 404);
 });
