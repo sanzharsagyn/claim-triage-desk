@@ -8,4 +8,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm test
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Unit tests
+        run: npm test
+      - name: API integration test (Python client, local server, mock model)
+        run: |
+          node tests/dev-server.mjs &
+          sleep 2
+          CLAIMDESK_URL=http://localhost:8790 python -m unittest discover -s examples -v
